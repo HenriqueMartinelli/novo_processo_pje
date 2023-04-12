@@ -6,6 +6,7 @@ from anticaptchaofficial.hcaptchaproxyless import *
 from init import BaseRequest
 from scheme import SCHEME
 from datetime import datetime
+import urllib
 
 
 class MainClientException(Exception):
@@ -47,7 +48,7 @@ class Pje_pet(BaseRequest):
         soup = BeautifulSoup(html_viewstate.content, "html.parser")
         self.inputs["ViewState"] = soup.find('input', {'name': 'javax.faces.ViewState'})['value']
         process_link = self.find_locator('requests', inputs=self.inputs)
-        self.inputs['url_process'] = 'https://pje.tjba.jus.br' + process_link.headers['location']
+        self.inputs['url_process'] = 'https://pje.tjba.jus.br' + process_link[-1].headers['location']
         return  self.switch_to_screen("SetSubject")
 
 
@@ -55,20 +56,19 @@ class Pje_pet(BaseRequest):
     def set_subject(self):
         scheme = SCHEME(inputs=self.inputs)
         headers = scheme['GlobalForm']['headers']
-        print(headers)
         page = self.session.get(self.inputs['url_process'], headers=headers)
         soup = BeautifulSoup(page.content, "html.parser")
-
         self.inputs["ViewState"] = soup.find('input', {'name': 'javax.faces.ViewState'})['value']
         self.find_locator('requests', inputs=self.inputs)
-        return self.switch_to_screen("SetFeatures")
+
+        return self.switch_to_screen("PrepareUpload")
     
 
     @BaseRequest.screen_decorator("SetFeatures")
     def set_features(self):
         data = SCHEME(inputs=self.inputs)[self.current_screen]["requests"][0]
         change_features = self.search_data(datas=[data], arquivo=None)
-        soup = BeautifulSoup(change_features.content, "html.parser")
+        soup = BeautifulSoup(change_features[-1].content, "html.parser")
         jsonString = soup.find('a', {'class': 'ml-5 mt-15'})['onclick'].split("containerId':")[1].split(',')[0]
         self.inputs['AJAXREQUEST'] =  str(jsonString).replace("'", '')
         self.inputs['frmSegredoSig'] = soup.find('input', {'id' : 'frmSegredoSig:selectOneRadio:0'})['onclick'].split('frmSegredoSig:')[1].split("'")[0]
@@ -77,7 +77,7 @@ class Pje_pet(BaseRequest):
         self.search_data(datas=[data], arquivo=None)
         data = SCHEME(inputs=self.inputs)[self.current_screen]["requests"][2]
         frmSegredoSig = self.search_data(datas=[data], arquivo=None)
-        soup = BeautifulSoup(frmSegredoSig.content, "html.parser")
+        soup = BeautifulSoup(frmSegredoSig[-1].content, "html.parser")
         self.inputs['frmSegredoSig_option'] = soup.select_one('#frmSegredoSig\:observacaoSegredoDiv > div > div.name')['id']
 
         data = SCHEME(inputs=self.inputs)[self.current_screen]["requests"][3]
@@ -88,12 +88,12 @@ class Pje_pet(BaseRequest):
 
         data = SCHEME(inputs=self.inputs)[self.current_screen]["requests"][5]
         self.search_data(datas=[data], arquivo=None)
-        
+        return self.switch_to_screen("ScheduleRequestForm")
 
     @BaseRequest.screen_decorator("ScheduleRequestForm")
-    def schedule_request(self, filename, file, num_termo:str, mime:str, cont:int, file_size,):
-        self.cont = cont
+    def schedule_request(self, filename, file, mime:str, file_size,):
         payload = {
+                    'AJAXREQUEST': self.inputs['AjaxRequest'],
                     'quantidadeProcessoDocumento': self.inputs['qtdDoc'],
                     'jsonProcessoDocumento': {"array":json.dumps([{'nome': filename, 'tamanho': int(str(file_size).split('.')[0]), 'mime': mime}])},
                     'acaoAjaxAdicionarProcessoDocumento': 'acaoAjaxAdicionarProcessoDocumento',
@@ -101,8 +101,10 @@ class Pje_pet(BaseRequest):
                     'AJAX:EVENTS_COUNT': '1'}
 
         payload, headers = self.update_form(payload=payload, headers={})
+        scheme = SCHEME(inputs=self.inputs)
+        payload.update(scheme['GlobalForm']['payload'])
         self.request(method='POST', 
-                    url=f"{self.inputs['URL_BASE']}/Processo/CadastroPeticaoAvulsa/peticaoPopUp.seam",
+                    url=f"{self.inputs['URL_BASE']}/Processo/update.seam",
                     payload=payload,  headers=headers, 
                     params={}, decode=True, files={})
 
@@ -113,29 +115,45 @@ class Pje_pet(BaseRequest):
 
     @BaseRequest.screen_decorator("PrepareUpload")
     def prepare_upload(self):
-        if not 'commandLinkAdicionar' in self.peticionarHTML.text:
-            self.send_editor_text_area()
-        self.inputs.update(self.search_inputs(self.peticionarHTML.content))
+        # response  = self.find_locator('requests', inputs=self.inputs)
+        response  = self.find_locator('requests', inputs=self.inputs)
+        soup = BeautifulSoup(response[-1].content, "html.parser")
+        jsonString = soup.find('input', {'id': 'commandButtonLoteTipo'})['onclick'].split("containerId':")[1].split(',')[0]
+        self.inputs['AjaxRequest'] =  str(jsonString).replace("'", '')
+        self.inputs.update(self.search_inputs(response[-1].content))
         self.switch_to_screen("ScheduleRequestForm")
+        return response
 
 
-    def send_editor_text_area(self):
-        soup = BeautifulSoup(self.peticionarHTML.content, "html.parser")
-        self.inputs["ViewState"] = soup.find('input', {'name': 'javax.faces.ViewState'})['value']
-        self.find_locator('requests', inputs=self.inputs)
-        data = SCHEME(inputs=self.inputs)["SearchLinks"]["requests"][3]
-        self.peticionarHTML = self.request(method=data['method'], 
-                                            url=data['url'], payload=data['payload'], 
-                                            headers=data['headers'], params=data['params'],
-                                            decode=data['decode'], files=data['files'])
+    def change_screen(self):
+        payload = {'AJAXREQUEST': '_viewRoot',
+        'javax.faces.ViewState': self.inputs.get('ViewState'),
+        'novoAnexo': 'novoAnexo',
+        'AJAX:EVENTS_COUNT': '1'}
+
+        payload = urllib.parse.urlencode(payload, quote_via=urllib.parse.quote)
+        scheme = SCHEME(inputs=self.inputs)
+        headers = scheme['GlobalForm']['headers']
+        
+        change = self.session.post("https://pje.tjba.jus.br/pje/Processo/update.seam", headers=headers, data=payload)
+        return change
 
 
-    def start(self, session):
+    def start(self, content, mimetype, file, mime, file_size, cont, file_options, session):
         self.session = session
         self.switch_to_screen("CreateProcess")
         self.create_process()
         self.set_subject()
-        self.set_features()
+        self.find_text(num_termo=content['tipo'], num_anexo=file_options['tipo_anexo'])
+        self.change_screen()
+        self.prepare_upload()
+  
+        response = self.schedule_request(filename=f"{file_options['filename']}{mimetype}", file=file, 
+                                         mime=mime, file_size=file_size)
+        # self.set_features()
+
+        return response
+
         # self.switch_to_screen("PrepareUpload")
 
         # self.prepare_upload()

@@ -57,7 +57,7 @@ class BaseRequest:
 
     def event_expected(self, screen, response):
         data = SCHEME(inputs=self.inputs)[screen]['expected_message']
-        soup = BeautifulSoup(response.content, "html.parser")
+        soup = BeautifulSoup(response[-1].content, "html.parser")
 
         if data.get('tag') and data.get('tag'):
             text_result = soup.find(data['tag'], {data['type']: data['value']})
@@ -69,10 +69,12 @@ class BaseRequest:
                     if text in text_result:
                         return self.returnMsg(msg=text_result, error=True, response=response, forced=False)
         
-        if data['not_expected_url'] in response.text and self.current_screen == 'ScheduleRequestForm':
+        if data['not_expected_url'] in response.text and screen == 'ScheduleRequestForm':
             return self.returnMsg(msg="URl error confirmed", error=True, response=response, forced=False)
-        if data['expected_url'] in response.url:
-            return self.returnMsg(error=False, response=response, forced=False)
+        if data['expected_url'] != []:
+            for url_expected in data['expected_url']:
+                if url_expected in response.url:
+                    return self.returnMsg(error=False, response=response, forced=False)
         else:
             return True
 
@@ -98,7 +100,7 @@ class BaseRequest:
                     "total_files":self.total_files,
                     "data":self.files
                     }}
-            requests.request("POST", url=self.URL_WOOK, json=event, timeout=10)
+            # requests.request("POST", url=self.URL_WOOK, json=event, timeout=10)
     
                 
 
@@ -115,11 +117,22 @@ class BaseRequest:
     
     
 
-
-    def find_text(self, num=str):
-        with open(f'json_files/itens_{self.instancia}.json') as f:
-            js = json.load(f)
-        return self.inputs.update({'num_termo': num, 'ipDesc': js[num]})
+    def find_text(self, num_termo=str, num_anexo=str):
+        try:
+            js_process = self.open_json()
+            js_anexo = self.open_json(json_name="anexo")
+            return self.inputs.update({'num_termo': num_termo, 'ipDesc': js_process[num_termo],
+                                       "num_anexo": num_anexo, 'ipDescAnexo': js_anexo[num_anexo]})
+        except Exception as e:
+           raise ValueError(f'number is not in the json: {e}')
+    
+    def open_json(self, json_name=None):
+        if json_name == "anexo":
+            filename = f"itens_anexo_{self.instancia}"
+        else:
+            filename = f"itens_{self.instancia}"
+        with open(f'json_files/{filename}.json') as f:
+            return json.load(f)
     
 
     def add_schedule(self, qtddoc, descDoc):
@@ -132,19 +145,21 @@ class BaseRequest:
             ]
         
     def request(self, method, url, decode:bool, headers=None, payload=None, params=None, files=None):
-            try:
+            # try:
                 if decode:
                     payload = urllib.parse.urlencode(payload, quote_via=urllib.parse.quote)
                 if files != {}: 
                     del headers['Content-Type']
                 return self.session.request(method, url=url, params=params,
                                     headers=headers, data=payload, files=files)
-            except:
-                return "Failed to process the request"
+            # except:
+            #     return "Failed to process the request"
+
 
     def update_form(self, payload, headers, descDoc=None, ):
             scheme = SCHEME(inputs=self.inputs)
-            payloadUpdate = scheme['GlobalForm']['payload']
+            # payloadUpdate = scheme['GlobalForm']['payload']
+            payloadUpdate = {}
             headersUpdate = scheme['GlobalForm']['headers']
             payloadUpdate.update(payload), headersUpdate.update(headers)
             if int(self.inputs['qtdDoc']) > 0:
@@ -154,7 +169,7 @@ class BaseRequest:
     
 
     def find_idProcesso(self, idProcesso, response):
-        soup = BeautifulSoup(response.content, 'html.parser')
+        soup = BeautifulSoup(response[-1].content, 'html.parser')
         if idProcesso == '':
             idProcesso = soup.find('a', {'title': 'Peticionar'})['id'].split(':')[-2]
             return idProcesso
@@ -164,22 +179,29 @@ class BaseRequest:
                 return idProcesso
         
 
-    def find_locator(self, element:str, inputs=dict(),
-                     username=None, password=None, captcha=None):
+    def find_locator(self, element:str, inputs=dict(), files=None,
+                     username=None, password=None, captcha=None, arquivo=None):
+
         screen = self.current_screen
-        datas = SCHEME(inputs=inputs, username=username,
+        datas = SCHEME(inputs=inputs, username=username, files=files, arquivo=arquivo,
                        password=password, captcha=captcha)[screen][element]
-        response = self.search_data(datas=datas)
+        response = self.search_data(datas=datas, arquivo=arquivo)
         return response
     
     def search_data(self, datas, arquivo=None):
+        lista = list()
         for data in datas:
             if data.get('update_form'):
-                print('oi')
                 data['payload'], data['headers'] = self.update_form(descDoc=arquivo, 
                                                     payload=data['payload'], headers=data['headers'])
+                
+            if self.current_screen == 'ScheduleRequestForm':
+                    scheme = SCHEME(inputs=self.inputs)
+                    data['payload'].update(scheme['GlobalForm']['payload'])
             response = self.request(method=data['method'], 
                          url=data['url'], payload=data['payload'], 
                          headers=data['headers'], params=data['params'],
                          decode=data['decode'], files=data['files'])
-        return response
+            lista.append(response)
+            
+        return lista
