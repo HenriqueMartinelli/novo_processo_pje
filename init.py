@@ -23,7 +23,6 @@ class BaseRequest:
     def set_global_variable(self, content:dict, instancia=int):
         self.instancia = instancia
         # self.total_files = total_files
-        # self.processo = processo
         # self.idTarefa = idTarefa
         URL_1 = 'https://pje.tjba.jus.br/pje'
         URL_2 = 'https://pje2g.tjba.jus.br/pje'
@@ -57,7 +56,7 @@ class BaseRequest:
 
     def event_expected(self, screen, response):
         data = SCHEME(inputs=self.inputs)[screen]['expected_message']
-        soup = BeautifulSoup(response[-1].content, "html.parser")
+        soup = BeautifulSoup(response.content, "html.parser")
 
         if data.get('tag') and data.get('tag'):
             text_result = soup.find(data['tag'], {data['type']: data['value']})
@@ -134,15 +133,6 @@ class BaseRequest:
         with open(f'json_files/{filename}.json') as f:
             return json.load(f)
     
-
-    def add_schedule(self, qtddoc, descDoc):
-        return [
-            (f'j_id223:{qtddoc}:ordem', int(qtddoc) + 1),
-            (f'j_id223:{qtddoc}:descDoc', descDoc),
-            (f'j_id223:{qtddoc}:tipoDoc', self.inputs['num_termo']) ,
-            (f'j_id223:{qtddoc}:numeroDoc', '123321'),
-            (f'j_id223:{qtddoc}:sigCB', 'on'),
-            ]
         
     def request(self, method, url, decode:bool, headers=None, payload=None, params=None, files=None):
             # try:
@@ -169,7 +159,7 @@ class BaseRequest:
     
 
     def find_idProcesso(self, idProcesso, response):
-        soup = BeautifulSoup(response[-1].content, 'html.parser')
+        soup = BeautifulSoup(response.content, 'html.parser')
         if idProcesso == '':
             idProcesso = soup.find('a', {'title': 'Peticionar'})['id'].split(':')[-2]
             return idProcesso
@@ -204,4 +194,5 @@ class BaseRequest:
                          decode=data['decode'], files=data['files'])
             lista.append(response)
             
-        return lista
+        return response
+    

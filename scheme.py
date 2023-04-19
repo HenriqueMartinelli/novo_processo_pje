@@ -160,6 +160,27 @@ def SCHEME(inputs=dict(), files=None, username=None, password=None, captcha=None
                             "headers": {},
                             "files": {},
                             "payload":{
+                                        'AJAXREQUEST': '_viewRoot',
+                                        'r_processoAssuntoListSearchForm:page': '1',
+                                        'r_processoAssuntoListSearchForm:searching': 'true',
+                                        'r_processoAssuntoListSearchForm:j_id12946:j_id12948:assuntoCompleto': '',
+                                        'r_processoAssuntoListSearchForm:j_id12957:j_id12959:codAssuntoTrf': inputs.get('num_subject'),
+                                        'r_processoAssuntoListSearchForm': 'r_processoAssuntoListSearchForm',
+                                        'autoScroll': '',
+                                        'javax.faces.ViewState': inputs.get('ViewState'),
+                                        'r_processoAssuntoListSearchForm:search': 'r_processoAssuntoListSearchForm:search',
+                                        'AJAX:EVENTS_COUNT': '1'
+                                        },
+                            "params": {}
+                                },
+                            {
+                            "method": "POST", 
+                            "url": f"{inputs.get('URL_BASE')}/Processo/update.seam",
+                            "decode": False,
+                            "update_form": True,
+                            "headers": {},
+                            "files": {},
+                            "payload":{
                                     'AJAXREQUEST': '_viewRoot',
                                     'r_processoAssuntoListList:0:j_id366:j_id367': 'r_processoAssuntoListList:0:j_id366:j_id367',
                                     'autoScroll': '',
@@ -257,9 +278,8 @@ def SCHEME(inputs=dict(), files=None, username=None, password=None, captcha=None
                                     'AJAXREQUEST': '_viewRoot',
                                     'javax.faces.ViewState': inputs.get('ViewState'),
                                     'formAddPrioridadeProcesso:prioridadeProcesso:prioridadeProcessoDecoration:prioridadeProcesso': inputs.get('prioridadeProcesso'),
-                                    'formAddPrioridadeProcesso:prioridadeProcesso:prioridadeProcessoDecoration:prioridadeProcessoSupport': 'formAddPrioridadeProcesso:prioridadeProcesso:prioridadeProcessoDecoration:prioridadeProcessoSupport',
+                                    'formAddPrioridadeProcesso:prioridadeProcesso:prioridadeProcessoDecoration:prioridadeProcessoSupport': 'formAddPrioridadeProcesso:prioridadeProcesso:prioridadeProcessoDecoration:prioridadeProcessoSupport',                                                                       
                                     'ajaxSingle': 'formAddPrioridadeProcesso:prioridadeProcesso:prioridadeProcessoDecoration:prioridadeProcesso',
-                                    'formAddPrioridadeProcesso': 'formAddPrioridadeProcesso',
                                     'AJAX:EVENTS_COUNT': '1'
                                 },
                         "params": {}
@@ -379,5 +399,146 @@ def SCHEME(inputs=dict(), files=None, username=None, password=None, captcha=None
                                 },
                                 ],
                         },
-        
+
+            "SetParties": {
+                "requests": [
+                        {
+                            "method": "POST", 
+                            "url": f"{inputs.get('URL_BASE')}/Processo/update.seam",
+                            "decode": False,
+                            "update_form": True,
+                            "files": {},
+                            "payload":{
+                                        'AJAXREQUEST': '_viewRoot',
+                                        'javax.faces.ViewState': inputs.get('ViewState'),
+                                        'tabPartes': 'tabPartes',
+                                        'ajaxSingle': 'tabPartes',
+                                        'AJAX:EVENTS_COUNT': '1'
+                                    },
+                            "headers":{},
+                            "params": {}
+                                },
+
+                         {
+                            "method": "POST", 
+                            "url": f"{inputs.get('URL_BASE')}/Processo/update.seam",
+                            "decode": True,
+                            "update_form": True,
+                            "files": {},
+                            "payload":{
+                                        'AJAXREQUEST': 'regionPartes',
+                                        f'formVincular{inputs.get("polo")}': f'formVincular{inputs.get("polo")}',
+                                        'autoScroll': '',
+                                        'javax.faces.ViewState': inputs.get('ViewState'),
+                                        f'formVincular{inputs.get("polo")}:{inputs.get("vicParte")}': f'formVincular{inputs.get("polo")}:supResertarVincParte{inputs.get("vicParte")}',
+                                        f'ajaxSingle': f'formVincular{inputs.get("polo")}:toolBarGroupVincular{inputs.get("polo")}',
+                                        'AJAX:EVENTS_COUNT': '1'
+                                    },
+                            "headers":{},
+                            "params": {}
+                                },
+
+                        {
+                            "method": "POST", 
+                            "url": f"{inputs.get('URL_BASE')}/Processo/update.seam",
+                            "decode": False,
+                            "update_form": True,
+                            "files": {},
+                            "payload":{
+                                        'AJAXREQUEST': 'preCadastroPessoaFisicaForm:regionDocumentoPrincipal',
+                                        'destino': '',
+                                        'tipoPessoa': '',
+                                        'isBrasileiro': '',
+                                        'tipoEspecializado': '',
+                                        'preCadastroPessoaFisicaForm:tipoPessoaDecoration:tipoPessoa': 'F',
+                                        'preCadastroPessoaFisicaForm:isBrasileiroDecoration:isBrasileiroSelectOneRadio': 'true',
+                                        'preCadastroPessoaFisicaForm:preCadastroPessoaFisica_nrCPFDecoration:preCadastroPessoaFisica_nrCPF': inputs.get('cpf'),
+                                        'preCadastroPessoaFisicaForm': 'preCadastroPessoaFisicaForm',
+                                        'autoScroll': '',
+                                        'javax.faces.ViewState': inputs.get('ViewState'),
+                                        'preCadastroPessoaFisicaForm:pesquisarDocumentoPrincipal': 'preCadastroPessoaFisicaForm:pesquisarDocumentoPrincipal',
+                                        'AJAX:EVENTS_COUNT': '1'
+                                    },
+                            "headers":{},
+                            "params": {}
+                                },
+
+                        {
+                            "method": "POST", 
+                            "url": f"{inputs.get('URL_BASE')}/Processo/update.seam",
+                            "decode": False,
+                            "update_form": True,
+                            "files": {},
+                            "payload":{
+                                        'AJAXREQUEST': 'preCadastroPessoaFisicaForm:preCadastroPessoaFisicaRegion',
+                                        'destino': '',
+                                        'tipoPessoa': '',
+                                        'isBrasileiro': '',
+                                        'tipoEspecializado': '',
+                                        'preCadastroPessoaFisicaForm:tipoPessoaDecoration:tipoPessoa': 'F',
+                                        'preCadastroPessoaFisicaForm:isBrasileiroDecoration:isBrasileiroSelectOneRadio': 'true',
+                                        'preCadastroPessoaFisicaForm:preCadastroPessoaFisica_nrCPFDecoration:preCadastroPessoaFisica_nrCPF': inputs.get('cpf'),
+                                        'preCadastroPessoaFisicaForm:dsNomeCivil': inputs.get('name'),
+                                        'preCadastroPessoaFisicaForm': 'preCadastroPessoaFisicaForm',
+                                        'autoScroll': '',
+                                        'javax.faces.ViewState': inputs.get('ViewState'),
+                                        'preCadastroPessoaFisicaForm:btnConfirmarCadastro': 'preCadastroPessoaFisicaForm:btnConfirmarCadastro',
+                                        'AJAX:EVENTS_COUNT': '1'
+                                    },
+                            "headers":{},
+                            "params": {}
+                                },
+
+                    {
+                            "method": "POST", 
+                            "url": f"{inputs.get('URL_BASE')}/Processo/update.seam",
+                            "decode": True,
+                            "update_form": True,
+                            "files": {},
+                            "payload":{
+                                        'AJAXREQUEST': 'regionAssociarParte',
+                                        'formInserirParteProcesso:tpParteAlteracao': inputs.get('tipo_parte'),
+                                        'formInserirParteProcesso:nomeSocial': '',
+                                        'formInserirParteProcesso:nomeDecoration:nome': inputs.get('name'),
+                                        'formInserirParteProcesso:nomeParteDecoration:nomeParte': 'org.jboss.seam.ui.NoSelectionConverter.noSelectionValue',
+                                        'formInserirParteProcesso:nomeGenitorDecoration:nomeGenitor': inputs.get('nomeGenitor'),
+                                        'formInserirParteProcesso:dataObitoDecoration:dataObitoInputDate': inputs.get('data_obito'),
+                                        'formInserirParteProcesso:dataObitoDecoration:dataObitoInputCurrentDate': '04/2023',
+                                        'formInserirParteProcesso:etniaDecoration:etnia': inputs.get('etnia'),
+                                        'formInserirParteProcesso:estadoCivilDecoration:estadoCivil': inputs.get('estado_civil'),
+                                        'formInserirParteProcesso:escolaridadeDecoration:escolaridade': inputs.get('escolaridade'),
+                                        inputs.get('idProfissaoAdv'): inputs.get('profissao'),
+                                        inputs.get('_selection'): '',
+                                        'formInserirParteProcesso:selectPaisNacionalidadeDecoration:selectPaisNacionalidade': inputs.get('nacionalidade'),
+                                        inputs.get('comboParteSigilosa'): 'false',
+                                        'formInserirParteProcesso:comboRepresentanteDecoration:comboRepresentante': 'org.jboss.seam.ui.NoSelectionConverter.noSelectionValue',
+                                        'formInserirParteProcesso': 'formInserirParteProcesso',
+                                        'autoScroll': '',
+                                        'javax.faces.ViewState': inputs.get('ViewState'),
+                                        'formInserirParteProcesso:btnInserirParteProcesso': 'formInserirParteProcesso:btnInserirParteProcesso',
+                                        'ajaxSingle': 'formInserirParteProcesso:btnInserirParteProcesso',
+                                        'AJAX:EVENTS_COUNT': '1'
+                                    },
+                            "headers":{},
+                            "params": {}
+                                },
+                        {
+                            "method": "POST", 
+                            "url": f"{inputs.get('URL_BASE')}/Processo/update.seam",
+                            "decode": True,
+                            "update_form": True,
+                            "files": {},
+                            "payload":{
+                                        'AJAXREQUEST': '_viewRoot',
+                                        'formResetarVinculacaoPartes': 'formResetarVinculacaoPartes',
+                                        'autoScroll': '',
+                                        'javax.faces.ViewState': inputs.get('ViewState'),
+                                        f'formResetarVinculacaoPartes:reRender{inputs.get("polo")}': f'formResetarVinculacaoPartes:reRender{inputs.get("polo")}',
+                                        'AJAX:EVENTS_COUNT': '1'
+                                    },
+                            "headers":{},
+                            "params": {}
+                                }
+                ]
+    }
     }
