@@ -11,30 +11,30 @@ app = FastAPI()
 session = requests.session()
 
 
-# @app.post("/upload")
-# async def upload(request: Request):
-#     try:
-#         form = await request.json()
-#         content = get_content(content=form, required_fields=["tipo", "files", "processo", "idProcesso",
-#                                                              "username", "password", "idTarefa", "instancia"])
+@app.post("/upload")
+async def upload(request: Request):
+    try:
+        form = await request.json()
+        content = get_content(content=form, required_fields=["tipo", "files", "processo", "idProcesso",
+                                                             "username", "password", "idTarefa", "instancia"])
         
-#         client.set_global_variable(len(content['files']), content['idTarefa'], content['processo'], content['instancia'])
-#         client.login(username=content['username'], password=content['password'], session=session)
+        client.set_global_variable(len(content['files']), content['idTarefa'], content['processo'], content['instancia'])
+        client.login(username=content['username'], password=content['password'], session=session)
 
-#         for num, file in enumerate(content['files']):
-#             mime, mimetype, file_size = get_extension(file['b64Content'])
-#             decode_file = base64.b64decode(file['b64Content'])
-#             client.start(content=content, mimetype=mimetype, file=decode_file, mime=mime,
-#                          file_size=file_size, cont=num+1, file_options=file)
+        for num, file in enumerate(content['files']):
+            mime, mimetype, file_size = get_extension(file['b64Content'])
+            decode_file = base64.b64decode(file['b64Content'])
+            client.start(content=content, mimetype=mimetype, file=decode_file, mime=mime,
+                         file_size=file_size, cont=num+1, file_options=file)
             
-#         return {"sucesso" : True}
+        return {"sucesso" : True}
     
-#     except MainClientException as e:
-#         client.returnMsg(msg=F"Fatal Error: {e}", error= True, forced=True)
-#         return error(e.args[0])
-#     except Exception as e:
-#         client.returnMsg(msg=F"Fatal Error: {e}", error= True, forced=True)
-#         return error(msg=e.args[0]) 
+    except MainClientException as e:
+        client.returnMsg(msg=F"Fatal Error: {e}", error= True, forced=True)
+        return error(e.args[0])
+    except Exception as e:
+        client.returnMsg(msg=F"Fatal Error: {e}", error= True, forced=True)
+        return error(msg=e.args[0]) 
 
 
 @app.post("/create")

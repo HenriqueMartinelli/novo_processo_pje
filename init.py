@@ -138,7 +138,6 @@ class BaseRequest:
     
         
     def request(self, method, url, decode:bool, headers=None, payload=None, params=None, files=None):
-                print(headers)
                 print(payload)
             # try:
                 if decode:
@@ -194,7 +193,7 @@ class BaseRequest:
                      username=None, password=None, captcha=None,):
 
         screen = self.current_screen
-        datas = SCHEME(inputs=inputs, username=username, files=files,
+        datas = SCHEME(inputs=inputs, username=username,
                        password=password, captcha=captcha)[screen][element]
         response = self.search_data(datas=datas)
         return response
