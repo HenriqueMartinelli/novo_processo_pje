@@ -43,7 +43,7 @@ async def create_process(request: Request):
     form = await request.json()
     content = get_content(content=form, required_fields=["tipo", "files", "valorCausa", "instancia", "subjects",
                                                             "username", "password", "idTarefa", "features", "polo_ativo",
-                                                            "polo_passivo", "files"])
+                                                            "polo_passivo", "files", "dados_iniciais"])
     
     # client.set_global_variable(len(content['files']), content['idTarefa'], content['instancia'])
     client.set_global_variable(content=content, instancia=content['instancia'])

@@ -18,6 +18,7 @@ class BaseRequest:
         self.processo = str()
         self.idTarefa = str()
         self.cont = int()
+        self.payload = {}
 
 
     def set_global_variable(self, content:dict, instancia=int):
@@ -29,6 +30,7 @@ class BaseRequest:
 
         # self.instancia = 1 if processo[-4:] != '0000' else 2
         self.inputs['URL_BASE'] = URL_1 if self.instancia in (1, '1') else URL_2
+        print(self.inputs['URL_BASE'])
         self.inputs['domain'] = self.inputs['URL_BASE'].split('br')[0] + 'br'
         for key, value in content.items():
             self.inputs[key] = value
@@ -36,6 +38,7 @@ class BaseRequest:
 
     def search_inputs(self, content):
         soup = BeautifulSoup(content, "html.parser")
+        self.soup = soup
         try:
             return {
                 "cid" :soup.find('input', {'name': 'cid'})['value'],
@@ -135,6 +138,8 @@ class BaseRequest:
     
         
     def request(self, method, url, decode:bool, headers=None, payload=None, params=None, files=None):
+                print(headers)
+                print(payload)
             # try:
                 if decode:
                     payload = urllib.parse.urlencode(payload, quote_via=urllib.parse.quote)
@@ -145,18 +150,34 @@ class BaseRequest:
             # except:
             #     return "Failed to process the request"
 
+    def add_schedule(self, qtddoc):
+        return [
+            (f'j_id223:{qtddoc}:ordem', '2'),
+            (f'j_id223:{qtddoc}:descDoc', self.inputs['filename']),
+            (f'j_id223:{qtddoc}:numeroDoc', ''),
+            (f'j_id223:{qtddoc}:tipoDoc', self.inputs['num_anexo']) 
+            ]
+        
 
-    def update_form(self, payload, headers, descDoc=None, ):
+    def update_form(self, payload, headers):
             scheme = SCHEME(inputs=self.inputs)
             # payloadUpdate = scheme['GlobalForm']['payload']
             payloadUpdate = {}
             headersUpdate = scheme['GlobalForm']['headers']
             payloadUpdate.update(payload), headersUpdate.update(headers)
-            if int(self.inputs['qtdDoc']) > 0:
-                payload = [(key, payload[key]) for key in payload]
-                payload = payload + self.add_schedule(descDoc=descDoc, qtddoc=self.inputs['qtdDoc'])
             return payloadUpdate, headersUpdate
     
+    def update_forms(self, payload, headers):
+            scheme = SCHEME(inputs=self.inputs)
+            payloadUpdate = scheme['GlobalForm']['payload']
+            headersUpdate = scheme['GlobalForm']['headers']
+            payloadUpdate.update(payload), headersUpdate.update(headers)
+            self.payload.update(payloadUpdate)
+
+            if int(self.inputs['qtdDoc']) > 0:
+                payload = [(key, self.payload[key]) for key in self.payload]
+                payloadUpdate = payload + self.add_schedule(qtddoc=self.inputs['qtdDoc'])
+            return payloadUpdate, headersUpdate
 
     def find_idProcesso(self, idProcesso, response):
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -170,29 +191,32 @@ class BaseRequest:
         
 
     def find_locator(self, element:str, inputs=dict(), files=None,
-                     username=None, password=None, captcha=None, arquivo=None):
+                     username=None, password=None, captcha=None,):
 
         screen = self.current_screen
-        datas = SCHEME(inputs=inputs, username=username, files=files, arquivo=arquivo,
+        datas = SCHEME(inputs=inputs, username=username, files=files,
                        password=password, captcha=captcha)[screen][element]
-        response = self.search_data(datas=datas, arquivo=arquivo)
+        response = self.search_data(datas=datas)
         return response
     
-    def search_data(self, datas, arquivo=None):
+    def search_data(self, datas):
         lista = list()
         for data in datas:
             if data.get('update_form'):
-                data['payload'], data['headers'] = self.update_form(descDoc=arquivo, 
-                                                    payload=data['payload'], headers=data['headers'])
-                
-            if self.current_screen == 'ScheduleRequestForm':
-                    scheme = SCHEME(inputs=self.inputs)
-                    data['payload'].update(scheme['GlobalForm']['payload'])
+                if self.current_screen == 'ScheduleRequestForm':
+                    data['payload'], data['headers'] = self.update_forms(
+                                                        payload=data['payload'], headers=data['headers'])
+                else: 
+                    data['payload'], data['headers'] = self.update_form(
+                                payload=data['payload'], headers=data['headers'])
+                     
+
             response = self.request(method=data['method'], 
                          url=data['url'], payload=data['payload'], 
                          headers=data['headers'], params=data['params'],
                          decode=data['decode'], files=data['files'])
+            
             lista.append(response)
             
-        return response
+        return lista
     

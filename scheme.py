@@ -1,7 +1,7 @@
 # Dictionary with the description of the site screens,
 # each screen has an indication of screen, available actions and elements for interaction
 
-def SCHEME(inputs=dict(), files=None, username=None, password=None, captcha=None, arquivo="anexo_1.pdf"):
+def SCHEME(inputs=dict(), files=None, username=None, password=None, captcha=None):
     return {
         "Login": {
                 "requests": [{
@@ -47,18 +47,22 @@ def SCHEME(inputs=dict(), files=None, username=None, password=None, captcha=None
 
                             
                 "payload": {
-                            'AJAXREQUEST': inputs.get("AjaxRequest"),
+                            'AJAXREQUEST': inputs.get('AjaxRequest'),
                             'formularioUpload': 'formularioUpload',
-                            'cbTDDecoration:cbTD': '0',
-                            'ipDescDecoration:ipDesc': 'ALEGAÇÕES FINAIS',
+                            'cbTDDecoration:cbTD': inputs.get('num_termo'),
+                            'ipDescDecoration:ipDesc': inputs.get('ipDesc'),
                             'raTipoDocPrincipal': 'HTML',
-                            'docPrincipalEditorTextArea': '<p>em ANEXOOOOO</p>',
+                            'docPrincipalEditorTextArea': '<p>anexo</p>',
+                            'ipNroDecoration:ipNro': '',
                             'context': '/pje',
-                            'cid': inputs.get("cid"),
-                            'mimes': inputs.get("mimes"),
-                            'mimesEhSizes': inputs.get("mimesEhSizes"),
+                            'cid': inputs.get('cid'),
+                            'mimes': inputs.get('mimes'),
+                            'quantidadeProcessoDocumento': inputs.get('qtdDoc'),
+                            'j_id673:0:ordem': '2',
+                            'j_id673:0:numeroDoc': '',
+                            'mimesEhSizes': inputs.get('mimesEhSizes'),
                             'tipoDocLoteSuperior': 'org.jboss.seam.ui.NoSelectionConverter.noSelectionValue',
-                            'javax.faces.ViewState': inputs.get("ViewState")
+                            'javax.faces.ViewState': inputs.get('ViewState')
                             } 
                         },
         "CreateProcess": {
@@ -76,7 +80,7 @@ def SCHEME(inputs=dict(), files=None, username=None, password=None, captcha=None
                                         'processoTrfForm': 'processoTrfForm',
                                         'autoScroll': '',
                                         'javax.faces.ViewState': inputs.get('ViewState'),
-                                        'processoTrfForm:classeJudicial:j_id173:areaDireitoCombo': '1861',
+                                        'processoTrfForm:classeJudicial:j_id173:areaDireitoCombo': inputs.get('materia'),
                                         'processoTrfForm:classeJudicial:j_id173:j_id184': 'processoTrfForm:classeJudicial:j_id173:j_id184',
                                         'ajaxSingle': 'processoTrfForm:classeJudicial:j_id173:areaDireitoCombo',
                                         'AJAX:EVENTS_COUNT': '1',
@@ -92,12 +96,12 @@ def SCHEME(inputs=dict(), files=None, username=None, password=None, captcha=None
                             "files": files,
                             "payload":{
                                         'AJAXREQUEST': '_viewRoot',
-                                        'processoTrfForm:classeJudicial:j_id173:areaDireitoCombo': '1861',
+                                        'processoTrfForm:classeJudicial:j_id173:areaDireitoCombo':  inputs.get('materia'),
                                         'processoTrfForm:classeJudicial:classeJudicialComboDecoration:classeJudicialCombo': 'org.jboss.seam.ui.NoSelectionConverter.noSelectionValue',
                                         'processoTrfForm': 'processoTrfForm',
                                         'autoScroll': '',
                                         'javax.faces.ViewState': inputs.get('ViewState'),
-                                        'processoTrfForm:classeJudicial:jurisdicaoComboDecoration:jurisdicaoCombo': '156',
+                                        'processoTrfForm:classeJudicial:jurisdicaoComboDecoration:jurisdicaoCombo':  inputs.get('jurisdicao'),
                                         'processoTrfForm:classeJudicial:jurisdicaoComboDecoration:j_id197': 'processoTrfForm:classeJudicial:jurisdicaoComboDecoration:j_id197',
                                         'ajaxSingle': 'processoTrfForm:classeJudicial:jurisdicaoComboDecoration:jurisdicaoCombo',
                                         'AJAX:EVENTS_COUNT': '1'},
@@ -112,9 +116,9 @@ def SCHEME(inputs=dict(), files=None, username=None, password=None, captcha=None
                             "files": files,
                             "payload":{
                                         'AJAXREQUEST': '_viewRoot',
-                                        'processoTrfForm:classeJudicial:j_id173:areaDireitoCombo': '1861',
-                                        'processoTrfForm:classeJudicial:jurisdicaoComboDecoration:jurisdicaoCombo': '156',
-                                        'processoTrfForm:classeJudicial:classeJudicialComboDecoration:classeJudicialCombo': '204',
+                                        'processoTrfForm:classeJudicial:j_id173:areaDireitoCombo':  inputs.get('materia'),
+                                        'processoTrfForm:classeJudicial:jurisdicaoComboDecoration:jurisdicaoCombo':  inputs.get('jurisdicao'),
+                                        'processoTrfForm:classeJudicial:classeJudicialComboDecoration:classeJudicialCombo':  inputs.get('classe'),
                                         'processoTrfForm': 'processoTrfForm',
                                         'autoScroll': '',
                                         'javax.faces.ViewState': inputs.get('ViewState'),
@@ -131,9 +135,9 @@ def SCHEME(inputs=dict(), files=None, username=None, password=None, captcha=None
                             "files": files,
                             "payload":{
                                         'AJAXREQUEST': '_viewRoot',
-                                        'processoTrfForm:classeJudicial:j_id173:areaDireitoCombo': '1861',
-                                        'processoTrfForm:classeJudicial:jurisdicaoComboDecoration:jurisdicaoCombo': '156',
-                                        'processoTrfForm:classeJudicial:classeJudicialComboDecoration:classeJudicialCombo': '204',
+                                        'processoTrfForm:classeJudicial:j_id173:areaDireitoCombo': inputs.get('materia'),
+                                        'processoTrfForm:classeJudicial:jurisdicaoComboDecoration:jurisdicaoCombo': inputs.get('jurisdicao'),
+                                        'processoTrfForm:classeJudicial:classeJudicialComboDecoration:classeJudicialCombo': inputs.get('classe'),
                                         'processoTrfForm': 'processoTrfForm',
                                         'autoScroll': '',
                                         'javax.faces.ViewState': inputs.get('ViewState'),
@@ -309,6 +313,9 @@ def SCHEME(inputs=dict(), files=None, username=None, password=None, captcha=None
                             "update_form": True,
                             "files": {},
                             "payload":{
+                                            'j_id673:0:ordem': '2',
+                                    'j_id673:0:numeroDoc': '',
+                                    'quantidadeProcessoDocumento': inputs.get('qtdDoc'),
                                         'AJAXREQUEST': 'j_id662',
                                         f"j_id673:{inputs.get('qtdDoc')}:tipoDoc": inputs.get('num_anexo'),
                                         f"j_id673:{inputs.get('qtdDoc')}:j_id704": f"j_id673:{inputs.get('qtdDoc')}:j_id704",
@@ -324,11 +331,13 @@ def SCHEME(inputs=dict(), files=None, username=None, password=None, captcha=None
                             "update_form": True,
                             "files": files,
                             "payload":{
-                                        "j_id652": "Salvar",
-                                        'j_id673:0:tipoDoc': '0',
-                                        'j_id673:0:descDoc': arquivo,
-                                        "j_id673:0:descDoc": 'anexo_1',
-                                        "j_id673:0:numeroDoc": ""},
+                                        'j_id202': 'Salvar',
+                                        'j_id673:0:ordem': '2',
+                                        'j_id673:0:tipoDoc': inputs.get('num_anexo'),
+                                        f"j_id673:0:descDoc": inputs.get('filename'),
+                                        'quantidadeProcessoDocumento': inputs.get('qtdDoc'),
+
+                                        f"j_id673:0:numeroDoc": ""},
 
                             "headers":{
                                         'X-Requested-With': 'XMLHttpRequest',
@@ -344,9 +353,13 @@ def SCHEME(inputs=dict(), files=None, username=None, password=None, captcha=None
                             "update_form": True,
                             "files": {},
                             "payload":{
-                                        "j_id673:0:numeroDoc": "",
-                                        f"j_id673:{inputs.get('qtdDoc')}:commandLinkAtualizarComboTipoDocumento": f"j_id673:{inputs.get('qtdDoc')}:commandLinkAtualizarComboTipoDocumento",
-                                        "ajaxSingle": f"j_id673:{inputs.get('qtdDoc')}:commandLinkAtualizarComboTipoDocumento"
+            'j_id673:0:ordem': '2',
+    'j_id673:0:numeroDoc': '',
+    'quantidadeProcessoDocumento': inputs.get("qtdDoc"),
+    f'j_id673:{inputs.get("qtdDoc")}:commandLinkAtualizarComboTipoDocumento': f'j_id673:{inputs.get("qtdDoc")}:commandLinkAtualizarComboTipoDocumento',
+    'ajaxSingle': f'j_id673:{inputs.get("qtdDoc")}:commandLinkAtualizarComboTipoDocumento',
+    'AJAX:EVENTS_COUNT': '1'
+
                                         },
                             "headers": {},
                             "params": {}
@@ -358,11 +371,20 @@ def SCHEME(inputs=dict(), files=None, username=None, password=None, captcha=None
                             "update_form": True,
                             "files": {},
                             "payload":{
-                                        "j_id673:0:numeroDoc": "",
-                                        f"j_id673:{inputs.get('qtdDoc')}:commandLinkGravar": f"j_id673:{inputs.get('qtdDoc')}:commandLinkGravar",
-                                        "ajaxSingle": f"j_id673:{inputs.get('qtdDoc')}:commandLinkGravar"
-                                        },
-                            "headers": {},
+            'j_id673:0:numeroDoc': '',
+    f'j_id673:{inputs.get("qtdDoc")}:commandLinkGravar': f'j_id673:{inputs.get("qtdDoc")}:commandLinkGravar',
+    'ajaxSingle': f'j_id673:{inputs.get("qtdDoc")}:commandLinkGravar',
+    'AJAX:EVENTS_COUNT': '1'},
+                            "headers": {
+                            'Accept': '*/*',
+                            'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7,it;q=0.6',
+                            'Connection': 'keep-alive',
+                            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                            'Origin': 'https://pje.tjba.jus.br',
+                            'Referer': inputs.get('url_process'),
+                            'Host': 'pje.tjba.jus.br',
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36',
+                            },
                             "params": {}
                                 }
                             ],
@@ -418,7 +440,6 @@ def SCHEME(inputs=dict(), files=None, username=None, password=None, captcha=None
                             "headers":{},
                             "params": {}
                                 },
-
                          {
                             "method": "POST", 
                             "url": f"{inputs.get('URL_BASE')}/Processo/update.seam",
@@ -488,6 +509,136 @@ def SCHEME(inputs=dict(), files=None, username=None, password=None, captcha=None
                             "headers":{},
                             "params": {}
                                 },
+                                            {
+                            "method": "POST", 
+                            "url": f"{inputs.get('URL_BASE')}/Processo/update.seam",
+                            "decode": False,
+                            "update_form": True,
+                            "files": {},
+                            "payload":{
+                                        'AJAXREQUEST': 'regionAssociarParte',
+                                        'preCadastroPessoaFisicaForm:dsNomeCivil': inputs.get('name'),
+                                        'autoScroll': '',
+                                        'javax.faces.ViewState': inputs.get('ViewState'),
+                                        'formInserirParteProcesso': 'formInserirParteProcesso',
+                                        'autoScroll': '',
+                                        'formInserirParteProcesso:enderecoUsuario': 'formInserirParteProcesso:enderecoUsuario',
+                                        'AJAX:EVENTS_COUNT': '1'
+                                    },
+                            "headers":{},
+                            "params": {}
+                                },
+
+
+                            {
+                            "method": "POST", 
+                            "url": f"{inputs.get('URL_BASE')}/Processo/update.seam",
+                            "decode": False,
+                            "update_form": True,
+                            "files": {},
+                            "payload":{
+                                        'AJAXREQUEST': inputs.get('AjaxRequest'),
+                                        f'{inputs.get("formInserirParte")}:cadastroPartePessoaEnderecoCEP': inputs.get('cep'),
+                                        'formInserirParteProcesso': 'formInserirParteProcesso',
+                                        f'{inputs.get("formInserirParteProcessos")}_selection':  '',
+                                        'formInserirParteProcesso:tpParteAlteracao': '0',   
+                                        inputs.get('formInserirParteProcessos'): inputs.get('formInserirParteProcessos'),
+                                        'ajaxSingle': inputs.get('formInserirParteProcessos'),
+                                        'inputvalue':inputs.get('cep'),
+                                        'javax.faces.ViewState': inputs.get('ViewState'),
+                                        'AJAX:EVENTS_COUNT': '1',
+
+
+                                    },
+                            "headers":{},
+                            "params": {}
+                                },
+
+                            {
+                            "method": "POST", 
+                            "url": f"{inputs.get('URL_BASE')}/Processo/update.seam",
+                            "decode": False,
+                            "update_form": True,
+                            "files": {},
+                            "payload":{
+                                        'AJAXREQUEST': inputs.get('AjaxRequest'),
+                                        f'{inputs.get("formInserirParte")}:cadastroPartePessoaEnderecoCEP': inputs.get('EndereconomeLogradouro'),
+                                        'formInserirParteProcesso': 'formInserirParteProcesso',
+                                        f'{inputs.get("formInserirParteProcessos")}_selection':  '0',
+                                        'formInserirParteProcesso:tpParteAlteracao': '0',   
+                                        'formInserirParteProcesso:cadastroPartePessoaEndereconomeEstadoDecoration:cadastroPartePessoaEndereconomeEstado': '',
+                                        'formInserirParteProcesso:cadastroPartePessoaEndereconomeCidadeDecoration:cadastroPartePessoaEndereconomeCidade': '',
+                                        'formInserirParteProcesso:cadastroPartePessoaEndereconomeBairroDecoration:cadastroPartePessoaEndereconomeBairro': '',
+                                        'formInserirParteProcesso:cadastroPartePessoaEndereconomeLogradouroDecoration:cadastroPartePessoaEndereconomeLogradouro': '',
+                                        'formInserirParteProcesso:cadastroPartePessoaEndereconumeroEnderecoDecoration:cadastroPartePessoaEndereconumeroEndereco': '',
+                                        'formInserirParteProcesso:cadastroPartePessoaEnderecocomplementoDecoration:cadastroPartePessoaEnderecocomplemento': '',
+                                        'ajaxSingle': inputs.get('formInserirParteProcessos'),
+                                        'javax.faces.ViewState': inputs.get('ViewState'),
+                                        'AJAX:EVENTS_COUNT': '1',
+                                        inputs.get('GridTabList'): inputs.get('GridTabList'),
+                                        f'{inputs.get("GridTabList")}:_link_hidden_': '' ,
+                                        f'{inputs.get("GridTabList")}:j_idcl': '',
+                                        'AJAX:EVENTS_COUNT': '1',
+                                        inputs.get('formInserirParteProcessosFinal'): inputs.get('formInserirParteProcessosFinal'),
+
+                                    },
+                            "headers":{},
+                            "params": {}
+                                },
+
+                                 {
+                            "method": "POST", 
+                            "url": f"{inputs.get('URL_BASE')}/Processo/update.seam",
+                            "decode": False,
+                            "update_form": True,
+                            "files": {},
+                            "payload":{
+                                        'AJAXREQUEST': inputs.get('AjaxRequest'),
+                                        f'{inputs.get("formInserirParte")}:cadastroPartePessoaEnderecoCEP': inputs.get('cep'),
+                                        'formInserirParteProcesso': 'formInserirParteProcesso',
+                                        'formInserirParteProcesso:cadastroPartePessoaEndereconomeEstadoDecoration:cadastroPartePessoaEndereconomeEstado': 'BAHIA',
+                                        'formInserirParteProcesso:cadastroPartePessoaEndereconomeCidadeDecoration:cadastroPartePessoaEndereconomeCidade': 'SALVADOR',
+                                        'formInserirParteProcesso:cadastroPartePessoaEndereconomeBairroDecoration:cadastroPartePessoaEndereconomeBairro': 'Fazenda Grande do Retiro',
+                                        'formInserirParteProcesso:cadastroPartePessoaEndereconomeLogradouroDecoration:cadastroPartePessoaEndereconomeLogradouro': 'Empresa Gráfica da Bahia',
+                                        'formInserirParteProcesso:cadastroPartePessoaEndereconumeroEnderecoDecoration:cadastroPartePessoaEndereconumeroEndereco': '',
+                                        'formInserirParteProcesso:cadastroPartePessoaEnderecocomplementoDecoration:cadastroPartePessoaEnderecocomplemento': 'Rua Mello Moraes Filho 189',
+                                        'formInserirParteProcesso:tpParteAlteracao': '0',   
+                                        f'{inputs.get("formInserirParteProcessos")}_selection':  '',
+                                        inputs.get('GridTabList'): inputs.get('GridTabList'),
+                                        f'{inputs.get("GridTabList")}:_link_hidden_': '' ,
+                                        f'{inputs.get("GridTabList")}:j_idcl': '',
+                                        'formInserirParteProcesso:cadastroPartePessoaEnderecobtnGravarEndereco': 'formInserirParteProcesso:cadastroPartePessoaEnderecobtnGravarEndereco',
+                                        'javax.faces.ViewState': inputs.get('ViewState'),
+                                        'AJAX:EVENTS_COUNT': '1',
+                                        'autoScroll': '', 
+                                        'formInserirParteProcesso:comboRepresentanteDecoration:comboRepresentante': 'org.jboss.seam.ui.NoSelectionConverter.noSelectionValue',
+                                        inputs.get('comboParteSigilosa'): 'false',
+
+
+
+
+                                    },
+                            "headers":{},
+                            "params": {}
+                                },
+                                                     {
+                            "method": "POST", 
+                            "url": f"{inputs.get('URL_BASE')}/Processo/update.seam",
+                            "decode": False,
+                            "update_form": True,
+                            "files": {},
+                            "payload":{
+                                        'AJAXREQUEST': 'regionAssociarParte',
+                                        'formInserirParteProcesso:tpParteAlteracao': '0',
+                                        'formInserirParteProcesso': 'formInserirParteProcesso',
+                                        'javax.faces.ViewState': inputs.get('ViewState'),
+
+
+                                    },
+                            "headers":{},
+                            "params": {}
+                                },
+                                
 
                     {
                             "method": "POST", 

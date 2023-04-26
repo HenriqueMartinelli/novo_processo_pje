@@ -44,13 +44,15 @@ class Pje_pet(BaseRequest):
 
     @BaseRequest.screen_decorator("CreateProcess")
     def create_process(self):
+        for key, value in self.inputs.get("dados_iniciais").items():
+            self.inputs[key] = value
         html_viewstate = self.session.request('GET', 'https://pje.tjba.jus.br/pje/Processo/cadastrar.seam?newInstance=true')
         self.inputs['url_process'] = html_viewstate.url
 
         soup = BeautifulSoup(html_viewstate.content, "html.parser")
         self.inputs["ViewState"] = soup.find('input', {'name': 'javax.faces.ViewState'})['value']
         process_link = self.find_locator('requests', inputs=self.inputs)
-        self.inputs['url_process'] = 'https://pje.tjba.jus.br' + process_link.headers['location']
+        self.inputs['url_process'] = 'https://pje.tjba.jus.br' + process_link[-1].headers['location']
         return  self.switch_to_screen("SetSubject")
 
 
@@ -64,37 +66,37 @@ class Pje_pet(BaseRequest):
         self.queue_subject(subjects)
         return self.switch_to_screen("PrepareUpload")
     
+
     def queue_subject(self, subjects:list):
         for subject in subjects:
             self.inputs['num_subject'] = subject
             self.find_locator('requests', inputs=self.inputs)
 
 
-
     @BaseRequest.screen_decorator("SetFeatures")
     def set_features(self):
         data = SCHEME(inputs=self.inputs)[self.current_screen]["requests"][0]
-        change_features = self.search_data(datas=[data], arquivo=None)
-        soup = BeautifulSoup(change_features.content, "html.parser")
+        change_features = self.search_data(datas=[data])
+        soup = BeautifulSoup(change_features[-1].content, "html.parser")
         jsonString = soup.find('a', {'class': 'ml-5 mt-15'})['onclick'].split("containerId':")[1].split(',')[0]
         self.inputs['AJAXREQUEST'] =  str(jsonString).replace("'", '')
         self.inputs['frmSegredoSig'] = soup.find('input', {'id' : 'frmSegredoSig:selectOneRadio:0'})['onclick'].split('frmSegredoSig:')[1].split("'")[0]
 
         data = SCHEME(inputs=self.inputs)[self.current_screen]["requests"][1]
-        self.search_data(datas=[data], arquivo=None)
+        self.search_data(datas=[data])
         data = SCHEME(inputs=self.inputs)[self.current_screen]["requests"][2]
-        frmSegredoSig = self.search_data(datas=[data], arquivo=None)
-        soup = BeautifulSoup(frmSegredoSig.content, "html.parser")
+        frmSegredoSig = self.search_data(datas=[data])
+        soup = BeautifulSoup(frmSegredoSig[-1].content, "html.parser")
         self.inputs['frmSegredoSig_option'] = soup.select_one('#frmSegredoSig\:observacaoSegredoDiv > div > div.name')['id']
 
         data = SCHEME(inputs=self.inputs)[self.current_screen]["requests"][3]
-        self.search_data(datas=[data], arquivo=None)
+        self.search_data(datas=[data])
 
         data = SCHEME(inputs=self.inputs)[self.current_screen]["requests"][4]
-        self.search_data(datas=[data], arquivo=None)
+        self.search_data(datas=[data])
 
         data = SCHEME(inputs=self.inputs)[self.current_screen]["requests"][5]
-        self.search_data(datas=[data], arquivo=None)
+        self.search_data(datas=[data])
         return self.switch_to_screen("PrepareUpload")
 
 
@@ -108,17 +110,16 @@ class Pje_pet(BaseRequest):
                     'ajaxSingle': 'acaoAjaxAdicionarProcessoDocumento',
                     'AJAX:EVENTS_COUNT': '1'}
 
-        payload, headers = self.update_form(payload=payload, headers={})
-        scheme = SCHEME(inputs=self.inputs)
-        payload.update(scheme['GlobalForm']['payload'])
+    
+        payload, headers = self.update_forms(payload=payload, headers={})
         self.request(method='POST', 
                     url=f"{self.inputs['URL_BASE']}/Processo/update.seam",
                     payload=payload,  headers=headers, 
                     params={}, decode=True, files={})
 
         files = {filename: file}
-        response = self.find_locator('requests', arquivo=filename, files=files, inputs=self.inputs)
-        self.switch_to_screen("SetParties")
+        response = self.find_locator('requests', files=files, inputs=self.inputs)
+        self.switch_to_screen("PrepareUpload")
         return response
 
 
@@ -139,45 +140,67 @@ class Pje_pet(BaseRequest):
 
 
     def queue_parties(self):
-        data = SCHEME(inputs=self.inputs)[self.current_screen]["requests"][0]
-        ready_partes = self.search_data(datas=[data], arquivo=None)
-        soup = BeautifulSoup(ready_partes.content, "html.parser")
+        data = SCHEME(inputs=self.inputs)["SetParties"]["requests"][0]
+        ready_partes = self.search_data(datas=[data])
+        soup = BeautifulSoup(ready_partes[-1].content, "html.parser")
         self.inputs['_form_partes'] = soup.find('table', {'id': 'mpAssociarParteProcessoContentTable'}).form['id']
         self.inputs['complete_id_partes'] = soup.find('table', {'id': 'mpAssociarParteProcessoContentTable'}).script['id']
         self.inputs['id_form_partes_total'] = soup.find('table', {'id': 'mpAssociarParteProcessoContentTable'}).find('script')['id']
         
-        data = SCHEME(inputs=self.inputs)[self.current_screen]["requests"][1]
-        self.search_data(datas=[data], arquivo=None)
+        data = SCHEME(inputs=self.inputs)["SetParties"]["requests"][1]
+        self.search_data(datas=[data])
 
-        data = SCHEME(inputs=self.inputs)[self.current_screen]["requests"][2]
-        find_cpf = self.search_data(datas=[data], arquivo=None)
-  
-        soup = BeautifulSoup(find_cpf.content, "html.parser")
+        data = SCHEME(inputs=self.inputs)["SetParties"]["requests"][2]
+        find_cpf = self.search_data(datas=[data])
+
+        soup = BeautifulSoup(find_cpf[-1].content, "html.parser")
         self.inputs['name'] = soup.find('input', {'id': 'preCadastroPessoaFisicaForm:dsNomeCivil'})['value']
-        print(self.inputs['name'])
         
-        data = SCHEME(inputs=self.inputs)[self.current_screen]["requests"][3]
-        set_person = self.search_data(datas=[data], arquivo=None)
-        soup = BeautifulSoup(set_person.content, "html.parser")
+        data = SCHEME(inputs=self.inputs)["SetParties"]["requests"][3]
+        set_person = self.search_data(datas=[data])
+        soup = BeautifulSoup(set_person[-1].content, "html.parser")
         self.inputs['idProfissaoAdv'] = soup.select_one('[for*=profissaoAdv]')['for']
         self.inputs['_selection'] = soup.select_one('[id*=_selection]')['id']
         self.inputs['comboParteSigilosa'] = soup.select_one('[for*=comboParteSigilosa]')['for']
 
-        data = SCHEME(inputs=self.inputs)[self.current_screen]["requests"][4]
-        self.search_data(datas=[data], arquivo=None)
+        data = SCHEME(inputs=self.inputs)["SetParties"]["requests"][4]
+        setEnderec =  self.search_data(datas=[data])
+        soup = BeautifulSoup(setEnderec[-1].content, "html.parser")
+        self.inputs['formInserirParteProcessosFinal'] = soup.select_one("div:nth-child(1) > div.value.col-sm-12 > div:nth-child(3) > script").text.split("parameters':{")[1].split("'")[1]
+        self.inputs['formInserirParteProcessos'] = soup.select_one('table[id*="suggest"]')["id"].split(':suggest')[0]
+        self.inputs['formInserirParte'] = soup.select_one('div[id*="fieldcadastroPartePessoaEnderecoCEPDiv"]')["id"].split(':field')[0]
+        jsonString = soup.select_one('table[id*="AdicionarEndereco_shifted"]')['onclick'].split("containerId':")[1].split(',')[0]
+        self.inputs['AjaxRequest'] =  str(jsonString).replace("'", '')
+        self.inputs['GridTabList'] = soup.select_one("input[name*='GridTabList']")['value']
 
-        data = SCHEME(inputs=self.inputs)[self.current_screen]["requests"][5]
-        self.search_data(datas=[data], arquivo=None)
+        data = SCHEME(inputs=self.inputs)["SetParties"]["requests"][5]  
+        get_name = self.search_data(datas=[data])
+        soup = BeautifulSoup(get_name[-1].content, "html.parser")
+        self.inputs['EndereconomeLogradouro'] = soup.select_one('span[id*="colunaSugestaoEnderecoLogradouro"]').text
 
+        data = SCHEME(inputs=self.inputs)["SetParties"]["requests"][6]  
+        self.search_data(datas=[data])
+
+        data = SCHEME(inputs=self.inputs)["SetParties"]["requests"][7]  
+        self.search_data(datas=[data])
+
+        data = SCHEME(inputs=self.inputs)["SetParties"]["requests"][8]  
+        self.search_data(datas=[data])
+
+        data = SCHEME(inputs=self.inputs)["SetParties"]["requests"][9]  
+        self.search_data(datas=[data])
+
+        data = SCHEME(inputs=self.inputs)["SetParties"]["requests"][10]  
+        return self.search_data(datas=[data])
 
 
     @BaseRequest.screen_decorator("PrepareUpload")
     def prepare_upload(self):
         response  = self.find_locator('requests', inputs=self.inputs)
-        soup = BeautifulSoup(response.content, "html.parser")
+        soup = BeautifulSoup(response[-1].content, "html.parser")
         jsonString = soup.find('input', {'id': 'commandButtonLoteTipo'})['onclick'].split("containerId':")[1].split(',')[0]
         self.inputs['AjaxRequest'] =  str(jsonString).replace("'", '')
-        self.inputs.update(self.search_inputs(response.content))
+        self.inputs.update(self.search_inputs(response[-1].content))
         self.switch_to_screen("ScheduleRequestForm")
         return response
 
@@ -196,22 +219,26 @@ class Pje_pet(BaseRequest):
 
 
     def upload_files(self, num_termo, file_options:list):
-        self.change_screen()
-        self.prepare_upload()
+        self.session = session
+        return self.change_screen()
         for file in file_options:
-            mime, mimetype, file_size = get_extension(file['b64Content'])
+            self.find_text(num_termo=num_termo, num_anexo=file['tipo_anexo'])
+            self.prepare_upload()
+            # mime, mimetype, file_size = get_extension(file['b64Content'])
             decode_file = base64.b64decode(file['b64Content'])
-            self.find_text(num_termo=num_termo, num_anexo=file_options['tipo_anexo'])
-
-            response = self.schedule_request(filename=f"{file_options['filename']}{mimetype}", file=decode_file, 
-                                            mime=mime, file_size=file_size)
+            response = self.schedule_request(file['filename'],
+                file=decode_file, mime='application/pdf', file_size=82318.0)
+        self.switch_to_screen("SetParties")
         return response
 
-    def start(self, content, file_options):
+    def start(self, content, file_options, session):
+        self.session = session
         self.switch_to_screen("CreateProcess")
         self.create_process()
         self.set_subject(content['subjects'])
+        return self.upload_files(num_termo=content['tipo'], file_options=file_options)
+
         # self.set_features()
-        self.upload_files(num_termo=content['tipo'], file_options=file_options)
-        self.set_parties()
+        # self.upload_files(num_termo=content['tipo'], file_options=file_options)
+        # self.set_parties()
         
