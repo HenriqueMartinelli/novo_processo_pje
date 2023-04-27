@@ -63,15 +63,19 @@ class Pje_pet(BaseRequest):
         page = self.session.get(self.inputs['url_process'], headers=headers)
         soup = BeautifulSoup(page.content, "html.parser")
         self.inputs["ViewState"] = soup.find('input', {'name': 'javax.faces.ViewState'})['value']
-        self.queue_subject(subjects)
-        return self.switch_to_screen("SetFeatures")
+        self.inputs["assuntoCompleto"] = soup.select_one('label[for*="assuntoCompleto"]')['for']
+        self.inputs["codAssuntoTrf"] = soup.select_one('label[for*="codAssuntoTrf"]')['for']
+
+        r = self.queue_subject(subjects)
+        self.switch_to_screen("SetFeatures")
+        return r
     
 
     def queue_subject(self, subjects:list):
         for subject in subjects:
             self.inputs['num_subject'] = subject
-            self.find_locator('requests', inputs=self.inputs)
-
+            r = self.find_locator('requests', inputs=self.inputs)
+        return r
 
     @BaseRequest.screen_decorator("SetFeatures")
     def set_features(self):
@@ -282,11 +286,11 @@ class Pje_pet(BaseRequest):
         self.session = session
         self.switch_to_screen("CreateProcess")
         self.create_process()
-        self.set_subject(content['subjects'])
-        self.set_features()
-        self.set_parties()
-        self.switch_to_screen("PrepareUpload")
-        self.upload_files(num_termo=content['tipo'], file_options=file_options)
+        # self.set_subject(content['subjects'])
+        # self.set_features()
+        # self.set_parties()
+        # self.switch_to_screen("PrepareUpload")
+        # self.upload_files(num_termo=content['tipo'], file_options=file_options)
         # self.switch_to_screen("SetFeatures")
 
 
