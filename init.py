@@ -2,23 +2,18 @@ import json
 import urllib
 import requests
 from bs4 import BeautifulSoup
-from scheme import SCHEME
+from schemes.scheme import SCHEME
 from datetime import datetime
 
 
 class BaseRequest:
     def __init__(self):
         
-        self.URL_BASE = 'http://refor.detran.rj.gov.br/'
-        self.URL_WOOK = ''
         self.inputs = {'qtdDoc': 0}
-        self.files = list()
         self.current_screen = str()
         self.total_files = str()
-        self.processo = str()
         self.idTarefa = str()
-        self.cont = int()
-        self.payload = {}
+        self.oi = ''
 
 
     def set_global_variable(self, content:dict, instancia=int):
@@ -30,26 +25,23 @@ class BaseRequest:
 
         # self.instancia = 1 if processo[-4:] != '0000' else 2
         self.inputs['URL_BASE'] = URL_1 if self.instancia in (1, '1') else URL_2
-        print(self.inputs['URL_BASE'])
         self.inputs['domain'] = self.inputs['URL_BASE'].split('br')[0] + 'br'
         for key, value in content.items():
             self.inputs[key] = value
-
+           
 
     def search_inputs(self, content):
-        soup = BeautifulSoup(content, "html.parser")
-        self.soup = soup
         try:
             return {
-                "cid" :soup.find('input', {'name': 'cid'})['value'],
-                "mimes" : soup.find('input', {'name': 'mimes'})['value'],
-                "mimesEhSizes" : soup.find('input', {'name': 'mimesEhSizes'})['value'],
-                "AjaxRequest" : soup.find('input', {'id': 'commandButtonLoteTipo'})['onclick'].split("containerId':'")[1].split("',")[0],
-                "qtdDoc" : soup.find('input', {'id': 'quantidadeProcessoDocumento'})['value'],
-                "ViewState": soup.find('input', {'name': 'javax.faces.ViewState'})['value']
+                "cid" :content.find('input', {'name': 'cid'})['value'],
+                "mimes" : content.find('input', {'name': 'mimes'})['value'],
+                "mimesEhSizes" : content.find('input', {'name': 'mimesEhSizes'})['value'],
+                "AjaxRequest" : content.find('input', {'id': 'commandButtonLoteTipo'})['onclick'].split("containerId':'")[1].split("',")[0],
+                "qtdDoc" : content.find('input', {'id': 'quantidadeProcessoDocumento'})['value'],
+                "ViewState": content.find('input', {'name': 'javax.faces.ViewState'})['value']
             }
         except:
-                {"ViewState": soup.find('input', {'name': 'javax.faces.ViewState'})['value']}
+                {"ViewState": content.find('input', {'name': 'javax.faces.ViewState'})['value']}
 
     
 
@@ -138,84 +130,99 @@ class BaseRequest:
     
         
     def request(self, method, url, decode:bool, headers=None, payload=None, params=None, files=None):
-                print(payload)
+                # if self.oi != '':
+                #     print(payload)
             # try:
                 if decode:
                     payload = urllib.parse.urlencode(payload, quote_via=urllib.parse.quote)
-                if files != {}: 
+                if files: 
+                    print(headers)
                     del headers['Content-Type']
+                if not method: 
+                    method = 'POST'
                 return self.session.request(method, url=url, params=params,
                                     headers=headers, data=payload, files=files)
             # except:
             #     return "Failed to process the request"
 
-    def add_schedule(self, qtddoc):
-        return [
-            (f'j_id223:{qtddoc}:ordem', '2'),
-            (f'j_id223:{qtddoc}:descDoc', self.inputs['filename']),
-            (f'j_id223:{qtddoc}:numeroDoc', ''),
-            (f'j_id223:{qtddoc}:tipoDoc', self.inputs['num_anexo']) 
-            ]
-        
+    def get_ajaxRequest(self, content):
+        jsonString = content.select_one('table[id*="AdicionarEndereco_shifted"]')['onclick']
+        return str(jsonString).split("containerId':")[1].split(',')[0].replace("'", '')
 
     def update_form(self, payload, headers):
-            scheme = SCHEME(inputs=self.inputs)
-            # payloadUpdate = scheme['GlobalForm']['payload']
-            payloadUpdate = {}
-            headersUpdate = scheme['GlobalForm']['headers']
-            payloadUpdate.update(payload), headersUpdate.update(headers)
-            return payloadUpdate, headersUpdate
-    
-    def update_forms(self, payload, headers):
-            scheme = SCHEME(inputs=self.inputs)
+
+                    
+            scheme = getattr(SCHEME, self.current_screen)(inputs=self.inputs)
             payloadUpdate = scheme['GlobalForm']['payload']
             headersUpdate = scheme['GlobalForm']['headers']
             payloadUpdate.update(payload), headersUpdate.update(headers)
-            self.payload.update(payloadUpdate)
-
-            if int(self.inputs['qtdDoc']) > 0:
-                payload = [(key, self.payload[key]) for key in self.payload]
-                payloadUpdate = payload + self.add_schedule(qtddoc=self.inputs['qtdDoc'])
+            # self.payload.update(payloadUpdate)
             return payloadUpdate, headersUpdate
-
-    def find_idProcesso(self, idProcesso, response):
-        soup = BeautifulSoup(response.content, 'html.parser')
-        if idProcesso == '':
-            idProcesso = soup.find('a', {'title': 'Peticionar'})['id'].split(':')[-2]
-            return idProcesso
-        table = soup.find('tbody', {'id': 'fPP:processosTable:tb'})
-        for tr in table.findAll('tr'):
-            if idProcesso in tr.td['id']:
-                return idProcesso
         
 
-    def find_locator(self, element:str, inputs=dict(), files=None,
-                     username=None, password=None, captcha=None,):
-
+    def find_locator(self, locator:str, element:str, index=None, inputs=dict(),):
         screen = self.current_screen
-        datas = SCHEME(inputs=inputs, username=username,
-                       password=password, captcha=captcha)[screen][element]
-        response = self.search_data(datas=datas)
-        return response
+        if index is not None:
+            datas = [getattr(SCHEME, screen)(inputs=inputs)[locator][element][index]]
+        else:
+            datas = getattr(SCHEME, screen)(inputs=inputs)[locator][element]
+        return self.search_data(datas=datas, index=index)
     
-    def search_data(self, datas):
-        lista = list()
+    
+    def search_data(self, datas, index):
         for data in datas:
             if data.get('update_form'):
-                if self.current_screen == 'ScheduleRequestForm':
-                    data['payload'], data['headers'] = self.update_forms(
+                data['payload'], data['headers'] = self.update_form(
                                                         payload=data['payload'], headers=data['headers'])
-                else: 
-                    data['payload'], data['headers'] = self.update_form(
-                                payload=data['payload'], headers=data['headers'])
-                     
 
+            response = self.request(method=data.get('method'), 
+                         url=data.get('url'), payload=data.get('payload'), 
+                         headers=data.get('headers'), params=data.get('params'),
+                         decode=data.get('decode'), files=data.get('files'))
+        if index is not None: 
+            return BeautifulSoup(response.content, "html.parser")
+        self.response = response
+        return response
+
+    
+
+    # def set_actions(self, actions, content):
+    #     soup = BeautifulSoup(content, "html.parser")
+    #     for action in actions:
+    #         inputName = action['name']
+    #         variable = soup.select_one(action['soup'])
+    #         print('----________-')
+    #         print(action['soup'])
+    #         print(variable)
+    #         for command in action['commands']:
+    #             atribute = command['name']
+    #             if atribute == "get_atribute":
+    #                 variable = variable[command['atribute']]
+    #             if atribute == "split":
+    #                 variable = variable.split(command['string_split'])[command['index']]
+    #             if atribute == "replace": 
+    #                 variable = variable.replace(command['separator'], command['transform'])
+    #         print(variable)
+    #         self.inputs[inputName] = variable
+        
+    
+    
+    def find_locators(self, locator:str, element:str, index=None, inputs=dict()):
+        screen = self.current_screen
+        if index is not None:
+            datas = [getattr(SCHEME, screen)(inputs=inputs)[locator][element][index]]
+        else:
+            datas = getattr(SCHEME, screen)(inputs=inputs)[locator][element]
+        for data in datas:
+            if data.get('update_form'):
+                data['payload'], data['headers'] = self.update_forms(payload=data['payload'], headers=data['headers'])
             response = self.request(method=data['method'], 
                          url=data['url'], payload=data['payload'], 
                          headers=data['headers'], params=data['params'],
                          decode=data['decode'], files=data['files'])
-            
-            lista.append(response)
-            
-        return lista
-    
+        return response
+
+                
+
+
+
