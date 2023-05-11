@@ -139,7 +139,6 @@ class Upload():
         files = {filename + '.pdf': file}
         self.inputs['files'] = files
         self.inputs['filename'] = filename
-        return self.find_locator('ScheduleRequestForm', 'requests', inputs=self.inputs)
 
         payload_decode = urllib.parse.urlencode(payload, quote_via=urllib.parse.quote)
 
@@ -160,15 +159,17 @@ class Upload():
             'AJAX:EVENTS_COUNT': '1'
             })
 
-        payload_decode = urllib.parse.urlencode(payload, quote_via=urllib.parse.quote)
+        # payload_decode = urllib.parse.urlencode(payload, quote_via=urllib.parse.quote)
         
-        response_2 = self.session.post(
-            url=f'{url_base}pje/Processo/update.seam',
-            params={},
-            files={},
-            headers=headers_init,
-            data=payload_decode,
-        )
+        # response_2 = self.session.post(
+        #     url=f'{url_base}pje/Processo/update.seam',
+        #     params={},
+        #     files={},
+        #     headers=headers_init,
+        #     data=payload_decode,
+        # )
+        return self.find_locator('ScheduleRequestForm', 'requests', inputs=self.inputs)
+
         if arquivo in response_2.text:
             print('esta aqui')
 
@@ -197,8 +198,15 @@ class Upload():
         files = {filename + '.pdf': file}
         self.inputs['files'] = files
         self.inputs['filename'] = filename
-        upload =self.find_locators('ScheduleRequestForm', 'requests', inputs=self.inputs)
 
+        self.up = self.find_locator('ScheduleRequestForm', 'requests', index=1, inputs=self.inputs)
+        # upload = self.session.request('POST',
+        #     url=f'{url_base}pje/seam/resource/upload',
+        #     params=params,
+        #     headers=headers,
+        #     data=payload,
+        #     files={arquivo: file}
+        # )
 
         payload = payload_init
         payload.update({
@@ -210,14 +218,15 @@ class Upload():
             'AJAX:EVENTS_COUNT': '1'})
             
 
-        payload_decode = urllib.parse.urlencode(payload, quote_via=urllib.parse.quote)
-        self.session.post(
-            url=f'{url_base}pje/Processo/update.seam',
-            headers=headers_init,
-            params={},
-            files={},
-            data=payload_decode,
-        )
+        # payload_decode = urllib.parse.urlencode(payload, quote_via=urllib.parse.quote)
+        # self.session.post(
+        #     url=f'{url_base}pje/Processo/update.seam',
+        #     headers=headers_init,
+        #     params={},
+        #     files={},
+        #     data=payload_decode,
+        # )
+        self.find_locator('ScheduleRequestForm', 'requests', index=2, inputs=self.inputs)
 
         payload = payload_init
         payload.update({
@@ -236,13 +245,14 @@ class Upload():
             'Host': 'pje.tjba.jus.br',
             'Referer': url_id,
         }
-        response_5 = self.session.post(
-            f'{url_base}pje/Processo/update.seam',
-            headers=headers_init,
-            params={},
-            files={},
-            data=payload_decode,
-        )
+        # response_5 = self.session.post(
+        #     f'{url_base}pje/Processo/update.seam',
+        #     headers=headers_init,
+        #     params={},
+        #     files={},
+        #     data=payload_decode,
+        # )
+        response_5 = self.find_locator('ScheduleRequestForm', 'requests', index=3, inputs=self.inputs)
         print('terminou')
         if 'Erro ao tentar' in response_5.text.lower():
             print('NAO FOI')

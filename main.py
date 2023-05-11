@@ -169,7 +169,6 @@ class Pje_pet(BaseRequest, Upload, Parties):
         self.create_process()
         self.set_subject(content['subjects'])
         self.set_features()
-        # return self.set_parties()
         self.switch_to_screen("ScheduleRequestForm")
         self.upload_files(num_termo=content['tipo'], file_options=file_options)
         # self.switch_to_screen("SetFeatures")
