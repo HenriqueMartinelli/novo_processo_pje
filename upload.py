@@ -28,6 +28,18 @@ class Upload():
         headers = scheme['GlobalForm']['headers']
         change = self.session.post(f"{self.inputs['URL_BASE']}/Processo/update.seam", headers=headers, data=payload)
         return change
+    
+    def add_payload_form(self, index):
+        data = getattr(SCHEME, self.current_screen)(inputs=self.inputs)["ScheduleRequestForm"]
+        data = data["requests"][index]
+        self.payload_init.update(data['payload'])
+        self.headers_init.update(data['headers'])
+        self.request(method=data.get('method'), 
+                         url=data.get('url'), payload=self.payload_init, 
+                         headers=self.headers_init, params=data.get('params'),
+                         decode=data.get('decode'), files=data.get('files'))
+
+
 
 
     def send_upload(self, filename, file, mime:str, file_size,):
@@ -97,7 +109,7 @@ class Upload():
 
 
 
-        payload_init = {
+        self.payload_init = {
             'AJAXREQUEST': AjaxRequest,
             'formularioUpload': 'formularioUpload',
             'cbTDDecoration:cbTD': '39',
@@ -112,7 +124,7 @@ class Upload():
             'tipoDocLoteSuperior': 'org.jboss.seam.ui.NoSelectionConverter.noSelectionValue',
             'javax.faces.ViewState': ViewState} 
 
-        headers_init = {
+        self.headers_init = {
             'Accept': '*/*',
             'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7,it;q=0.6',
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
@@ -127,7 +139,7 @@ class Upload():
 
         filename = filename
         arquivo = filename + ".pdf"
-        payload = payload_init
+        payload = self.payload_init
 
         payload.update({
                 'AJAXREQUEST': AjaxRequest,
@@ -139,14 +151,21 @@ class Upload():
         files = {filename + '.pdf': file}
         self.inputs['files'] = files
         self.inputs['filename'] = filename
+        # return self.find_locator('ScheduleRequestForm', 'requests', inputs=self.inputs)
+
 
         payload_decode = urllib.parse.urlencode(payload, quote_via=urllib.parse.quote)
 
         r = self.session.post(
             url=f'{url_base}pje/Processo/update.seam',
-            headers=headers_init,
+            headers=self.headers_init,
             data=payload_decode,
             )
+        self.add_payload_form(index=0)
+        self.add_payload_form(index=1)
+        self.add_payload_form(index=2)
+        return self.add_payload_form(index=3)
+
 
         payload = payload_init
         payload.update({
@@ -159,17 +178,15 @@ class Upload():
             'AJAX:EVENTS_COUNT': '1'
             })
 
-        # payload_decode = urllib.parse.urlencode(payload, quote_via=urllib.parse.quote)
+        payload_decode = urllib.parse.urlencode(payload, quote_via=urllib.parse.quote)
         
-        # response_2 = self.session.post(
-        #     url=f'{url_base}pje/Processo/update.seam',
-        #     params={},
-        #     files={},
-        #     headers=headers_init,
-        #     data=payload_decode,
-        # )
-        return self.find_locator('ScheduleRequestForm', 'requests', inputs=self.inputs)
-
+        response_2 = self.session.post(
+            url=f'{url_base}pje/Processo/update.seam',
+            params={},
+            files={},
+            headers=headers_init,
+            data=payload_decode,
+        )
         if arquivo in response_2.text:
             print('esta aqui')
 
@@ -198,15 +215,8 @@ class Upload():
         files = {filename + '.pdf': file}
         self.inputs['files'] = files
         self.inputs['filename'] = filename
+        upload =self.find_locator('ScheduleRequestForm', 'requests', inputs=self.inputs)
 
-        self.up = self.find_locator('ScheduleRequestForm', 'requests', index=1, inputs=self.inputs)
-        # upload = self.session.request('POST',
-        #     url=f'{url_base}pje/seam/resource/upload',
-        #     params=params,
-        #     headers=headers,
-        #     data=payload,
-        #     files={arquivo: file}
-        # )
 
         payload = payload_init
         payload.update({
@@ -218,15 +228,14 @@ class Upload():
             'AJAX:EVENTS_COUNT': '1'})
             
 
-        # payload_decode = urllib.parse.urlencode(payload, quote_via=urllib.parse.quote)
-        # self.session.post(
-        #     url=f'{url_base}pje/Processo/update.seam',
-        #     headers=headers_init,
-        #     params={},
-        #     files={},
-        #     data=payload_decode,
-        # )
-        self.find_locator('ScheduleRequestForm', 'requests', index=2, inputs=self.inputs)
+        payload_decode = urllib.parse.urlencode(payload, quote_via=urllib.parse.quote)
+        self.session.post(
+            url=f'{url_base}pje/Processo/update.seam',
+            headers=headers_init,
+            params={},
+            files={},
+            data=payload_decode,
+        )
 
         payload = payload_init
         payload.update({
@@ -245,14 +254,13 @@ class Upload():
             'Host': 'pje.tjba.jus.br',
             'Referer': url_id,
         }
-        # response_5 = self.session.post(
-        #     f'{url_base}pje/Processo/update.seam',
-        #     headers=headers_init,
-        #     params={},
-        #     files={},
-        #     data=payload_decode,
-        # )
-        response_5 = self.find_locator('ScheduleRequestForm', 'requests', index=3, inputs=self.inputs)
+        response_5 = self.session.post(
+            f'{url_base}pje/Processo/update.seam',
+            headers=headers_init,
+            params={},
+            files={},
+            data=payload_decode,
+        )
         print('terminou')
         if 'Erro ao tentar' in response_5.text.lower():
             print('NAO FOI')
