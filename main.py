@@ -85,31 +85,10 @@ class Pje_pet(BaseRequest, Upload, Parties):
         return self.switch_to_screen("SetParties")
 
 
-    @BaseRequest.screen_decorator("ScheduleRequestForm")
-    def schedule_request(self, filename, file, mime:str, file_size):
-        payload = {
-                    'AJAXREQUEST': self.inputs['AjaxRequest'],
-                    'quantidadeProcessoDocumento': self.inputs['qtdDoc'],
-                    'jsonProcessoDocumento': {"array":json.dumps([{'nome': filename + ".pdf", 'tamanho': int(str(file_size).split('.')[0]), 'mime': mime}])},
-                    'acaoAjaxAdicionarProcessoDocumento': 'acaoAjaxAdicionarProcessoDocumento',
-                    'ajaxSingle': 'acaoAjaxAdicionarProcessoDocumento',
-                    'AJAX:EVENTS_COUNT': '1'}
-
-    
-        payload, headers = self.update_forms(payload=payload, headers={})
-        self.request(method='POST', 
-                    url=f"{self.inputs['URL_BASE']}/Processo/update.seam",
-                    payload=payload,  headers=headers, 
-                    params={}, decode=True, files={})
-
-        files = {filename + '.pdf': file}
-        self.inputs['files'] = files
-        self.inputs['filename'] = filename
-        response = self.find_locator('ScheduleRequestForm', 'requests',  inputs=self.inputs)
-        self.switch_to_screen("ScheduleRequestForm")
-        return response
-
-
+    """
+    Para cada parte de cada polo irá adicionar a lista de variaveis
+    variavel > result, irá ser adcionado ao json passada na api e ser enviada de volta ao webHook
+    """
     @BaseRequest.screen_decorator("SetParties")
     def set_parties(self):
         inputs = self.inputs.copy()
@@ -119,6 +98,7 @@ class Pje_pet(BaseRequest, Upload, Parties):
             for key, value in ativo.items():
                 inputs[key] = value
             result = self.add_part(inputsParties=inputs)
+            print(result)
             # ativo.update(result)
         
         for cpf_passivo in self.inputs['polo_passivo']:
@@ -127,27 +107,19 @@ class Pje_pet(BaseRequest, Upload, Parties):
             for key, value in cpf_passivo.items():
                 inputs[key] = value
             result = self.add_part(inputsParties=inputs)
+            print(result)
             # cpf_passivo.update(result)
             
 
-
+    @BaseRequest.screen_decorator("UploadFiles")
     def upload_files(self, num_termo, file_options:list):
-    
         for file in file_options:
-            scheme = getattr(SCHEME, "ScheduleRequestForm")(inputs=self.inputs)
-            headers = scheme['GlobalForm']['headers']
-            page = self.session.get(self.inputs['url_process'], headers=headers)
-            soup = BeautifulSoup(page.content, "html.parser")
-            self.inputs["ViewState"] = soup.find('input', {'name': 'javax.faces.ViewState'})['value']
             self.change_screen()
             # mime, mimetype, file_size = get_extension(file['b64Content'])
             # decode_file = base64.b64decode(file['b64Content'])
             self.find_text(num_termo=num_termo, num_anexo=file['tipo_anexo'])
             self.prepare_upload()
-
-
-            # response = self.schedule_request(filename=f"{file_options['filename']}{mimetype}", file=decode_file, 
-            #                                 mime=mime, file_size=file_size)
+            
             decode_file = base64.b64decode(file['b64Content'])
             response = self.send_upload(filename=file['filename'],
                 file=decode_file, mime='application/pdf', file_size=82318.0)
@@ -160,9 +132,9 @@ class Pje_pet(BaseRequest, Upload, Parties):
         self.create_process()
         self.set_subject(content['subjects'])
         self.set_features()
-        # self.set_parties()
-        self.switch_to_screen("ScheduleRequestForm")
-        self.upload_files(num_termo=content['tipo'], file_options=file_options)
+        self.set_parties()
+        # self.switch_to_screen("ScheduleRequestForm")
+        # self.upload_files(num_termo=content['tipo'], file_options=file_options)
         # self.switch_to_screen("SetFeatures")
 
 

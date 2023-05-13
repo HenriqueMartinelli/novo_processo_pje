@@ -1,4 +1,4 @@
-def scheme_ScheduleRequestForm(inputs:dict()):
+def scheme_UploadFiles(inputs:dict()):
     return {
         "GlobalForm": {
                 "headers": {
@@ -33,7 +33,7 @@ def scheme_ScheduleRequestForm(inputs:dict()):
                             } 
                         },
 
-         "ScheduleRequestForm": {
+         "UploadFiles": {
                 "requests": [{
                             "method": "POST", 
                             "url": f"{inputs.get('URL_BASE')}/Processo/update.seam",
@@ -41,14 +41,14 @@ def scheme_ScheduleRequestForm(inputs:dict()):
                             "update_form": True,
                             "files": {},
                             "payload":{
-                                        'j_id673:0:ordem': '2',
-                                        'j_id673:0:numeroDoc': '',
-                                        f"j_id673:{inputs.get('qtdDoc')}:tipoDoc": inputs.get('num_anexo'),
-                                        f"j_id673:{inputs.get('qtdDoc')}:j_id704": f"j_id673:{inputs.get('qtdDoc')}:j_id704",
-                                        "ajaxSingle": f"j_id673:{inputs.get('qtdDoc')}:tipoDoc",
-                                        'AJAX:EVENTS_COUNT': '1'
-
-                                        },
+            'j_id673:0:ordem': '2',
+            'j_id673:0:numeroDoc': '',
+            'quantidadeProcessoDocumento': inputs.get("qtdDoc"),
+            f'j_id673:{inputs.get("qtdDoc")}:tipoDoc': '0',
+            f'j_id673:{inputs.get("qtdDoc")}:j_id704': f'j_id673:{inputs.get("qtdDoc")}:j_id704',
+            'ajaxSingle': f'j_id673:{inputs.get("qtdDoc")}:tipoDoc',
+            'AJAX:EVENTS_COUNT': '1'
+            },
                             "headers": {},
                             "params": {}
                                 },
@@ -59,11 +59,13 @@ def scheme_ScheduleRequestForm(inputs:dict()):
                             "update_form": True,
                             "files": inputs.get("files"),
                             "payload":{
-                                        "j_id202": "Salvar",
-                                        'j_id673:0:ordem': '2',
-                                        f"j_id673:{inputs.get('qtdDoc')}:tipoDoc": '0',
-                                        f"j_id673:{inputs.get('qtdDoc')}:descDoc": inputs.get('filename'),
-                                        f"j_id673:{inputs.get('qtdDoc')}:numeroDoc": ""},
+            'j_id202': 'Salvar',
+            'j_id673:0:ordem': '2',
+            'j_id673:0:tipoDoc': '0',
+            'j_id673:0:descDoc': inputs.get('filename'),
+            'j_id673:0:numeroDoc': '',
+            'quantidadeProcessoDocumento': inputs.get("qtdDoc"),
+        },
 
                             "headers":{
                                         'X-Requested-With': 'XMLHttpRequest',
@@ -79,12 +81,12 @@ def scheme_ScheduleRequestForm(inputs:dict()):
                             "update_form": True,
                             "files": {},
                             "payload":{
-                                        'j_id673:0:ordem': '2',
-                                        "j_id673:0:numeroDoc": "",
-                                        f"j_id673:{inputs.get('qtdDoc')}:commandLinkAtualizarComboTipoDocumento": f"j_id673:{inputs.get('qtdDoc')}:commandLinkAtualizarComboTipoDocumento",
-                                        "ajaxSingle": f"j_id673:{inputs.get('qtdDoc')}:commandLinkAtualizarComboTipoDocumento",
-                                        'AJAX:EVENTS_COUNT': '1'
-                                        },
+            'j_id673:0:ordem': '2',
+            'j_id673:0:numeroDoc': '',
+            'quantidadeProcessoDocumento': inputs.get("qtdDoc"),
+            f'j_id673:{inputs.get("qtdDoc")}:commandLinkAtualizarComboTipoDocumento': f'j_id673:{inputs.get("qtdDoc")}:commandLinkAtualizarComboTipoDocumento',
+            'ajaxSingle': f'j_id673:{inputs.get("qtdDoc")}:commandLinkAtualizarComboTipoDocumento',
+            'AJAX:EVENTS_COUNT': '1'},
                             "headers": {},
                             "params": {}
                                 },
@@ -95,11 +97,10 @@ def scheme_ScheduleRequestForm(inputs:dict()):
                             "update_form": True,
                             "files": {},
                             "payload":{
-                                        "j_id673:0:numeroDoc": "",
-                                        f"j_id673:{inputs.get('qtdDoc')}:commandLinkGravar": f"j_id673:{inputs.get('qtdDoc')}:commandLinkGravar",
-                                        "ajaxSingle": f"j_id673:{inputs.get('qtdDoc')}:commandLinkGravar",
-                                        'AJAX:EVENTS_COUNT': '1'
-                                        },
+            'j_id673:0:numeroDoc': '',
+            f'j_id673:{inputs.get("qtdDoc")}:commandLinkGravar': f'j_id673:{inputs.get("qtdDoc")}:commandLinkGravar',
+            'ajaxSingle': f'j_id673:{inputs.get("qtdDoc")}:commandLinkGravar',
+            'AJAX:EVENTS_COUNT': '1'},
                             "headers": {
                             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                             },
@@ -147,7 +148,45 @@ def scheme_ScheduleRequestForm(inputs:dict()):
                             "params": {}
                                 },
                                 ],
-                        }
+                        },
+        "EnterScreen": {
+            "requests": [{
+                    "method": "GET", 
+                    "url": f"{inputs.get('url_process')}",
+                    "update_form": False,
+                    "payload":{},
+                    "headers": {
+                            'Accept': '*/*',
+                            'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7,it;q=0.6',
+                            'Connection': 'keep-alive',
+                            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                            'Origin': inputs.get('domain'),
+                            'Host': 'pje.tjba.jus.br',
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36',
+                    }},
+                {
+                    "url": f"{inputs.get('URL_BASE')}/Processo/update.seam",
+                    "update_form": False,
+                    "decode": True,
+                    "payload":{
+                        'AJAXREQUEST': '_viewRoot',
+                        'javax.faces.ViewState': inputs.get('ViewState'),
+                        'novoAnexo': 'novoAnexo',
+                        'AJAX:EVENTS_COUNT': '1'},
+                    "headers": {
+                            'Accept': '*/*',
+                            'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7,it;q=0.6',
+                            'Connection': 'keep-alive',
+                            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                            'Origin': inputs.get('domain'),
+                            'Referer': inputs.get('url_process'),
+                            'Host': 'pje.tjba.jus.br',
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36',
+                            }}
+                    
+                    
+                    ]}
+
 
             
     }

@@ -42,8 +42,7 @@ class BaseRequest:
                 "ViewState": content.find('input', {'name': 'javax.faces.ViewState'})['value']
             }
         except:
-                print('e')
-                {"ViewState": content.find('input', {'name': 'javax.faces.ViewState'})['value']}
+                return {"ViewState": content.find('input', {'name': 'javax.faces.ViewState'})['value']}
 
     
 
@@ -62,6 +61,7 @@ class BaseRequest:
                 if data['expected_text'] in text_result and data['expected_text'] != "":
                     return {'msg':text_result, 'error':False, 'response':response, 'forced':False}
                 for text in data['not_expected']:
+                    print(text_result)
                     if text.lower() in text_result:
                         return {'msg':text_result, 'error':True, response:response, 'forced':False}
             
@@ -124,7 +124,8 @@ class BaseRequest:
             return self.inputs.update({'num_termo': num_termo, 'ipDesc': js_process[num_termo],
                                        "num_anexo": num_anexo, 'ipDescAnexo': js_anexo[num_anexo]})
         except Exception as e:
-           raise ValueError(f'number is not in the json: {e}')
+           raise RuntimeError(f'number is not in the json: {e}')
+        
     
     def open_json(self, json_name=None):
         if json_name == "anexo":
@@ -171,16 +172,19 @@ class BaseRequest:
             datas = getattr(SCHEME, screen)(inputs=inputs)[locator][element]
 
         resultSearch = self.search_data(datas=datas, index=index, expected_event=expected_event)
-        if type(resultSearch) is tuple:
-            if resultSearch[1] is not None :
-                if resultSearch[1].get('error') is True:
-                    raise RuntimeError(resultSearch[1])
-            return resultSearch[0]
-        return resultSearch
+        return self.verify_error(result=resultSearch)
+    
+
+    def verify_error(self, result):
+        if type(result) is tuple:
+            if result[1] is not None :
+                if result[1].get('error') is True:
+                    raise RuntimeError(result[1])
+            return result[0]
+        return result
 
 
     def return_error(self, error):
-        print(type(error))
         if type(error) is RuntimeError:
             return error
         return {
@@ -204,50 +208,13 @@ class BaseRequest:
                     result = next((True for num in expected_event['index'] if str(index) in str(num)), False)
                     if result:
                         event = self.event_expected(self.current_screen, response)
+                        print(event)
                         return soup, event
                 return soup
 
         return response
 
-    
 
-    # def set_actions(self, actions, content):
-    #     soup = BeautifulSoup(content, "html.parser")
-    #     for action in actions:
-    #         inputName = action['name']
-    #         variable = soup.select_one(action['soup'])
-    #         print('----________-')
-    #         print(action['soup'])
-    #         print(variable)
-    #         for command in action['commands']:
-    #             atribute = command['name']
-    #             if atribute == "get_atribute":
-    #                 variable = variable[command['atribute']]
-    #             if atribute == "split":
-    #                 variable = variable.split(command['string_split'])[command['index']]
-    #             if atribute == "replace": 
-    #                 variable = variable.replace(command['separator'], command['transform'])
-    #         print(variable)
-    #         self.inputs[inputName] = variable
-        
-    
-    
-    # def find_locators(self, locator:str, element:str, index=None, inputs=dict()):
-    #     screen = self.current_screen
-    #     if index is not None:
-    #         datas = [getattr(SCHEME, screen)(inputs=inputs)[locator][element][index]]
-    #     else:
-    #         datas = getattr(SCHEME, screen)(inputs=inputs)[locator][element]
-    #     for data in datas:
-    #         if data.get('update_form'):
-    #             data['payload'], data['headers'] = self.update_forms(payload=data['payload'], headers=data['headers'])
-    #         response = self.request(method=data['method'], 
-    #                      url=data['url'], payload=data['payload'], 
-    #                      headers=data['headers'], params=data['params'],
-    #                      decode=data['decode'], files=data['files'])
-    #     return response
-
-                
 
 
 

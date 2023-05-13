@@ -6,9 +6,9 @@ def scheme_SetFeatures(inputs:dict()):
                             'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7,it;q=0.6',
                             'Connection': 'keep-alive',
                             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                            'Origin': 'https://pje.tjba.jus.br',
                             'Referer': inputs.get('url_process'),
-                            'Host': 'pje.tjba.jus.br',
+                            'Origin': inputs.get('domain'),
+                            'Host': inputs.get('domain').split('//')[1],
                             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36',
                             },
                 "payload": {}
