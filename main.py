@@ -22,7 +22,7 @@ class Pje_pet(BaseRequest, Upload, Parties):
         solver.set_verbose(1)
         solver.set_key("fa901ee28ac52b82d466a87985a19092")
         solver.set_website_url("https://pje.tjba.jus.br/")
-        solver.set_website_key('4098ab2e-d12a-40a8-b836-46df3b32df3f')
+        solver.set_website_key('af4fc5a3-1ac5-4e6d-819d-324d412a5e9d')
         result = solver.solve_and_return_solution()
         return result
 
@@ -49,7 +49,6 @@ class Pje_pet(BaseRequest, Upload, Parties):
         for key, value in self.inputs.get("dados_iniciais").items():
             self.inputs[key] = value
         html_viewstate = self.session.request('GET',  self.inputs['URL_BASE'] + '/Processo/cadastrar.seam?newInstance=true')
-        print(self.inputs['URL_BASE'] + 'Processo/cadastrar.seam?newInstance=true')
         self.inputs['url_process'] = html_viewstate.url
 
         soup = BeautifulSoup(html_viewstate.content, "html.parser")
@@ -79,20 +78,10 @@ class Pje_pet(BaseRequest, Upload, Parties):
             self.inputs['num_subject'] = subject
             return self.find_locator('SetSubject', 'requests', inputs=self.inputs)
 
+
     @BaseRequest.screen_decorator("SetFeatures")
     def set_features(self):
         self.find_locator('SetFeatures', 'requests', inputs=self.inputs)
-        # jsonString = screenFeatures.find('a', {'class': 'ml-5 mt-15'})['onclick'].split("containerId':")[1].split(',')[0]
-        # self.inputs['AjaxRequest'] =  str(jsonString).replace("'", '')
-        # self.inputs['frmSegredoSig'] = screenFeatures.find('input', {'id' : 'frmSegredoSig:selectOneRadio:0'})['onclick'].split('frmSegredoSig:')[1].split("'")[0]
-        # print('passei')
-        # self.find_locator('SetFeatures', 'requests', index=1, inputs=self.inputs)
-        # frmSegredoSig = self.find_locator('SetFeatures', 'requests', index=2, inputs=self.inputs)
-        # self.inputs['frmSegredoSig_option'] = frmSegredoSig.select_one('#frmSegredoSig\:observacaoSegredoDiv > div > div.name')['id']
-
-        # self.find_locator('SetFeatures', 'requests', index=3, inputs=self.inputs)
-        # self.find_locator('SetFeatures', 'requests', index=4, inputs=self.inputs)
-        # self.find_locator('SetFeatures', 'requests', index=5, inputs=self.inputs)
         return self.switch_to_screen("SetParties")
 
 
@@ -129,14 +118,17 @@ class Pje_pet(BaseRequest, Upload, Parties):
             inputs['vicParte'] = 'supResertarVincPartePA'
             for key, value in ativo.items():
                 inputs[key] = value
-            self.get_variables_partie(inputsParties=inputs)
-
+            result = self.add_part(inputsParties=inputs)
+            # ativo.update(result)
+        
         for cpf_passivo in self.inputs['polo_passivo']:
             inputs['polo'] = 'PoloPassivo'
             inputs['vicParte'] = 'supResetarVincPartePP'
             for key, value in cpf_passivo.items():
                 inputs[key] = value
-            self.get_variables_partie(inputsParties=inputs)
+            result = self.add_part(inputsParties=inputs)
+            # cpf_passivo.update(result)
+            
 
 
     def upload_files(self, num_termo, file_options:list):
@@ -156,7 +148,6 @@ class Pje_pet(BaseRequest, Upload, Parties):
 
             # response = self.schedule_request(filename=f"{file_options['filename']}{mimetype}", file=decode_file, 
             #                                 mime=mime, file_size=file_size)
-            print(file)
             decode_file = base64.b64decode(file['b64Content'])
             response = self.send_upload(filename=file['filename'],
                 file=decode_file, mime='application/pdf', file_size=82318.0)
@@ -169,6 +160,7 @@ class Pje_pet(BaseRequest, Upload, Parties):
         self.create_process()
         self.set_subject(content['subjects'])
         self.set_features()
+        # self.set_parties()
         self.switch_to_screen("ScheduleRequestForm")
         self.upload_files(num_termo=content['tipo'], file_options=file_options)
         # self.switch_to_screen("SetFeatures")

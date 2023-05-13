@@ -1,6 +1,8 @@
 import json
 import urllib
 import requests
+import traceback
+
 from bs4 import BeautifulSoup
 from schemes.scheme import SCHEME
 from datetime import datetime
@@ -8,7 +10,6 @@ from datetime import datetime
 
 class BaseRequest:
     def __init__(self):
-        
         self.inputs = {'qtdDoc': 0}
         self.current_screen = str()
         self.total_files = str()
@@ -41,6 +42,7 @@ class BaseRequest:
                 "ViewState": content.find('input', {'name': 'javax.faces.ViewState'})['value']
             }
         except:
+                print('e')
                 {"ViewState": content.find('input', {'name': 'javax.faces.ViewState'})['value']}
 
     
@@ -50,19 +52,19 @@ class BaseRequest:
 
 
     def event_expected(self, screen, response):
-        data = SCHEME(inputs=self.inputs)[screen]['expected_message']
+        data = getattr(SCHEME, screen)(inputs=self.inputs)["expected_message"]
         soup = BeautifulSoup(response.content, "html.parser")
 
-        if data.get('tag') and data.get('tag'):
-            text_result = soup.find(data['tag'], {data['type']: data['value']})
+        for selector in data.get('text_area'):
+            text_result = soup.find(selector['tag'], {selector['type']: selector['value']})
             if text_result:
                 text_result = text_result.text.strip().lower()
                 if data['expected_text'] in text_result and data['expected_text'] != "":
-                    return self.returnMsg(msg=text_result, error=False, response=response, forced=False)
+                    return {'msg':text_result, 'error':False, 'response':response, 'forced':False}
                 for text in data['not_expected']:
-                    if text in text_result:
-                        return self.returnMsg(msg=text_result, error=True, response=response, forced=False)
-        
+                    if text.lower() in text_result:
+                        return {'msg':text_result, 'error':True, response:response, 'forced':False}
+            
         if data['not_expected_url'] in response.text and screen == 'ScheduleRequestForm':
             return self.returnMsg(msg="URl error confirmed", error=True, response=response, forced=False)
         if data['expected_url'] != []:
@@ -74,20 +76,24 @@ class BaseRequest:
 
 
 
-    def returnMsg(self, forced:bool, msg=None, error=None, response=None):
-        if msg is not None:
+    def appendMsg(self, msg, error, screen, response=200):
+        if not screen:
+            screen = self.current_screen
+        if msg:
             self.files.append({
+                            "screen": screen,
                             "msg": msg,
                             "error": error,
                             "status_code": response})
-        else: 
-            return error
+        return error
+
+
+    def returnMsg(self, forced:bool, msg=None, error=None, response=None):
         if forced or self.total_files == self.cont: 
             now = datetime.now()
             dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
             event = {
                     "event":{  
-                    "screen":self.current_screen,
                     "created_at":dt_string,
                     "processo": self.processo,
                     "idTarefa": self.idTarefa,
@@ -130,46 +136,59 @@ class BaseRequest:
     
         
     def request(self, method, url, decode:bool, headers=None, payload=None, params=None, files=None):
-                # if self.oi != '':
-                #     print(payload)
+                if self.oi != '':
+                    print(payload)
             # try:
                 if decode:
                     payload = urllib.parse.urlencode(payload, quote_via=urllib.parse.quote)
                 if files: 
-                    print(headers)
                     del headers['Content-Type']
                 if not method: 
                     method = 'POST'
+                    return self.session.post(url=url, params=params,
+                                    headers=headers, data=payload, files=files)
                 return self.session.request(method, url=url, params=params,
                                     headers=headers, data=payload, files=files)
             # except:
             #     return "Failed to process the request"
 
-    def get_ajaxRequest(self, content):
-        jsonString = content.select_one('table[id*="AdicionarEndereco_shifted"]')['onclick']
-        return str(jsonString).split("containerId':")[1].split(',')[0].replace("'", '')
 
     def update_form(self, payload, headers):
-
-                    
             scheme = getattr(SCHEME, self.current_screen)(inputs=self.inputs)
             payloadUpdate = scheme['GlobalForm']['payload']
             headersUpdate = scheme['GlobalForm']['headers']
             payloadUpdate.update(payload), headersUpdate.update(headers)
-            # self.payload.update(payloadUpdate)
             return payloadUpdate, headersUpdate
         
 
     def find_locator(self, locator:str, element:str, index=None, inputs=dict(),):
         screen = self.current_screen
         if index is not None:
+            expected_event = getattr(SCHEME, screen)(inputs=self.inputs).get("expected_message")
             datas = [getattr(SCHEME, screen)(inputs=inputs)[locator][element][index]]
         else:
+            expected_event = None
             datas = getattr(SCHEME, screen)(inputs=inputs)[locator][element]
-        return self.search_data(datas=datas, index=index)
-    
-    
-    def search_data(self, datas, index):
+
+        resultSearch = self.search_data(datas=datas, index=index, expected_event=expected_event)
+        if type(resultSearch) is tuple:
+            if resultSearch[1] is not None :
+                if resultSearch[1].get('error') is True:
+                    raise RuntimeError(resultSearch[1])
+            return resultSearch[0]
+        return resultSearch
+
+
+    def return_error(self, error):
+        print(type(error))
+        if type(error) is RuntimeError:
+            return error
+        return {
+            "Error": traceback.format_exc()
+            }
+
+
+    def search_data(self, datas, index, expected_event):
         for data in datas:
             if data.get('update_form'):
                 data['payload'], data['headers'] = self.update_form(
@@ -179,9 +198,15 @@ class BaseRequest:
                          url=data.get('url'), payload=data.get('payload'), 
                          headers=data.get('headers'), params=data.get('params'),
                          decode=data.get('decode'), files=data.get('files'))
-        if index is not None: 
-            return BeautifulSoup(response.content, "html.parser")
-        self.response = response
+            if index is not None:
+                soup = BeautifulSoup(response.content, "html.parser")
+                if expected_event:
+                    result = next((True for num in expected_event['index'] if str(index) in str(num)), False)
+                    if result:
+                        event = self.event_expected(self.current_screen, response)
+                        return soup, event
+                return soup
+
         return response
 
     
@@ -207,20 +232,20 @@ class BaseRequest:
         
     
     
-    def find_locators(self, locator:str, element:str, index=None, inputs=dict()):
-        screen = self.current_screen
-        if index is not None:
-            datas = [getattr(SCHEME, screen)(inputs=inputs)[locator][element][index]]
-        else:
-            datas = getattr(SCHEME, screen)(inputs=inputs)[locator][element]
-        for data in datas:
-            if data.get('update_form'):
-                data['payload'], data['headers'] = self.update_forms(payload=data['payload'], headers=data['headers'])
-            response = self.request(method=data['method'], 
-                         url=data['url'], payload=data['payload'], 
-                         headers=data['headers'], params=data['params'],
-                         decode=data['decode'], files=data['files'])
-        return response
+    # def find_locators(self, locator:str, element:str, index=None, inputs=dict()):
+    #     screen = self.current_screen
+    #     if index is not None:
+    #         datas = [getattr(SCHEME, screen)(inputs=inputs)[locator][element][index]]
+    #     else:
+    #         datas = getattr(SCHEME, screen)(inputs=inputs)[locator][element]
+    #     for data in datas:
+    #         if data.get('update_form'):
+    #             data['payload'], data['headers'] = self.update_forms(payload=data['payload'], headers=data['headers'])
+    #         response = self.request(method=data['method'], 
+    #                      url=data['url'], payload=data['payload'], 
+    #                      headers=data['headers'], params=data['params'],
+    #                      decode=data['decode'], files=data['files'])
+    #     return response
 
                 
 
