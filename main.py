@@ -5,10 +5,10 @@ import urllib
 import base64
 
 from bs4 import BeautifulSoup
-from anticaptchaofficial.hcaptchaproxyless import *
 from init import BaseRequest
 from upload import Upload
 from parties import Parties
+from login import Login
 from schemes.scheme import SCHEME
 from datetime import datetime
 from convert_bs64 import get_extension
@@ -16,32 +16,16 @@ from convert_bs64 import get_extension
 class MainClientException(Exception):
     pass
 
-class Pje_pet(BaseRequest, Upload, Parties):
-    def antiCaptcha(self):
-        solver = hCaptchaProxyless()
-        solver.set_verbose(1)
-        solver.set_key("fa901ee28ac52b82d466a87985a19092")
-        solver.set_website_url("https://pje.tjba.jus.br/")
-        solver.set_website_key('af4fc5a3-1ac5-4e6d-819d-324d412a5e9d')
-        result = solver.solve_and_return_solution()
-        return result
+class Pje_pet(BaseRequest, Login, Upload, Parties):
 
-
-    def login(self, username, password, session) -> str:
+    @BaseRequest.screen_decorator("Login")
+    def validate_login(self, username, password, cookies=None):
         self.switch_to_screen("Login")
-        for i in range(3):
-            self.session = session
-            captcha = self.antiCaptcha()
-            response_login = self.find_locator('requests', username=username, 
-                                        password=password, captcha=captcha, inputs=self.inputs)
-            login = self.event_expected("Login", response_login)
-            if not login:
-                break
-        if login:
-            raise ValueError('Error in login requests')
-        
-        return self.switch_to_screen("SearchLinks")
-
+        self.session = requests.session()
+        if cookies:
+            if self.append_cookies_in_session(cookies=cookies):
+                return self.session.cookies
+        return self.login(username=username, password=password)
 
 
     @BaseRequest.screen_decorator("CreateProcess")
@@ -119,15 +103,15 @@ class Pje_pet(BaseRequest, Upload, Parties):
             # decode_file = base64.b64decode(file['b64Content'])
             self.find_text(num_termo=num_termo, num_anexo=file['tipo_anexo'])
             self.prepare_upload()
-            
+
             decode_file = base64.b64decode(file['b64Content'])
             response = self.send_upload(filename=file['filename'],
                 file=decode_file, mime='application/pdf', file_size=82318.0)
         return response
     
 
-    def start(self, content, file_options, session):
-        self.session = session
+    def start(self, content, file_options):
+        # self.session = session
         self.switch_to_screen("CreateProcess")
         self.create_process()
         self.set_subject(content['subjects'])
@@ -135,8 +119,6 @@ class Pje_pet(BaseRequest, Upload, Parties):
         self.set_parties()
         # self.switch_to_screen("ScheduleRequestForm")
         # self.upload_files(num_termo=content['tipo'], file_options=file_options)
-        # self.switch_to_screen("SetFeatures")
 
 
-        # self.upload_files(num_termo=content['tipo'], file_options=file_options)
         

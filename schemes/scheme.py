@@ -3,6 +3,8 @@ from schemes.SetFeatures import scheme_SetFeatures
 from schemes.SetSubject import scheme_SetSubjects
 from schemes.SetParties import scheme_SetParties
 from schemes.UploadFiles import scheme_UploadFiles
+from schemes.Login import scheme_Login
+
 
 class SCHEME:
     def SetParties(inputs):
@@ -19,3 +21,6 @@ class SCHEME:
 
     def CreateProcess(inputs):
         return scheme_CreateProcess(inputs=inputs)
+    
+    def Login(inputs):
+        return scheme_Login(inputs=inputs)
