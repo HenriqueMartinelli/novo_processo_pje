@@ -30,11 +30,14 @@ def scheme_Login(inputs:dict()):
                                         'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7,it;q=0.6',
                                         'Origin': inputs.get('domain'),
                                         'Host': inputs.get('domain').split('//')[1],
+                                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36',
+
                                         },
                             "params": {}
                             }],},
             "expected_message": {
-                            "tag": "span", "type": "class", "value": "rich-messages-label",
+                            "index": [],
+                            "text_area": [{"tag": "span", "type": "class", "value": "rich-messages-label"}],
                             "expected_text": '',
                             "not_expected_url": "",
                             "expected_url": "QuadroAviso/listViewQuadroAvisoMensagem.seam",

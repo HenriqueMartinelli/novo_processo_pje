@@ -24,13 +24,10 @@ class Upload():
         return self.inputs.update(self.search_inputs(screen))
     
 
-    def send_upload(self, filename, file, mime:str, file_size,):
-        mime='application/pdf'
-        file_size=82318.0 
-
-
+    def send_upload(self, filename, file, mime:str, file_size, mimetype):
         filename = filename
-        arquivo = filename + ".pdf"
+        arquivo = filename + mimetype
+        self.inputs['filename'] = filename
         
         payload = {
                     'AJAXREQUEST': self.inputs['AjaxRequest'],
@@ -47,8 +44,12 @@ class Upload():
                     payload=payload,  headers=headers, 
                     params={}, decode=True, files={})
         
-        files = {filename + '.pdf': file}
-        self.inputs['files'] = files
-        self.inputs['filename'] = filename
-        return self.find_locator('UploadFiles', 'requests',  inputs=self.inputs)
+        self.inputs['file_upload'] = {arquivo: file}
+
+        response_upload = self.find_locator('UploadFiles', 'requests',  inputs=self.inputs)
+        result = self.event_expected("UploadFiles", response_upload)
+        if not result.get('erro'):
+            return result
+        return result
+
 

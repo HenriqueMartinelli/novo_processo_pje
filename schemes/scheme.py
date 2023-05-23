@@ -1,14 +1,15 @@
 from schemes.CreateProcess import scheme_CreateProcess
 from schemes.SetFeatures import scheme_SetFeatures
 from schemes.SetSubject import scheme_SetSubjects
-from schemes.SetParties import scheme_SetParties
+from schemes.SetParts import scheme_SetParts
 from schemes.UploadFiles import scheme_UploadFiles
 from schemes.Login import scheme_Login
+from schemes.InitialProtocol import scheme_InitialProtocol
 
 
 class SCHEME:
-    def SetParties(inputs):
-        return scheme_SetParties(inputs=inputs)
+    def SetParts(inputs):
+        return scheme_SetParts(inputs=inputs)
 
     def SetSubject(inputs):
         return scheme_SetSubjects(inputs=inputs)
@@ -16,7 +17,7 @@ class SCHEME:
     def SetFeatures(inputs):
         return scheme_SetFeatures(inputs=inputs)
 
-    def ScheduleRequestForm(inputs):
+    def UploadFiles(inputs):
         return scheme_UploadFiles(inputs=inputs)
 
     def CreateProcess(inputs):
@@ -24,3 +25,8 @@ class SCHEME:
     
     def Login(inputs):
         return scheme_Login(inputs=inputs)
+    
+    def InitialProtocol(inputs):
+        return scheme_InitialProtocol(inputs=inputs)
+
+    

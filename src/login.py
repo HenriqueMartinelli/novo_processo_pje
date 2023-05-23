@@ -19,11 +19,18 @@ class Login():
         return False
 
     def login(self, username, password) :
+        self.inputs.update({
+            "username": username,
+            "password": password
+        })
         for i in range(3):
             self.session = session
-            captcha = self.antiCaptcha()
-            response_login = self.find_locator('requests', username=username, 
-                                        password=password, captcha=captcha, inputs=self.inputs)
+            self.inputs.update({
+            "username": username,
+            "password": password,
+            "captcha": self.antiCaptcha()
+            })
+            response_login = self.find_locator("Login", 'requests', inputs=self.inputs)
             login = self.event_expected("Login", response_login)
             if not login:
                 break
