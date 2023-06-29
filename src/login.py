@@ -14,6 +14,7 @@ class Login():
     def append_cookies_in_session(self, cookies:dict):
         requests.utils.add_dict_to_cookiejar(self.session.cookies, cookies)
         test_response = self.find_locator("TestSession", 'requests', inputs=self.inputs)
+        print(test_response.url)
         if "/painel_usuario/advogado.seam" in test_response.url:
             return True
         return False

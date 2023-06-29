@@ -38,7 +38,8 @@ def scheme_UploadFiles(inputs: dict()):
             "expected_text": 'finalizado o upload do arquivo',
             "expected_url": "",
             "not_expected_url": "/pje/errorUnexpected.seam?",
-            "not_expected": ["Failed to process the request", "Erro ao tentar gravar o arquivo"]},
+            "not_expected": ["Failed to process the request", "Erro ao tentar gravar o arquivo", "Arquivo vazio"]},
+        
         "UploadFiles": {
             "requests": [{
                 "method": "POST",
@@ -50,7 +51,7 @@ def scheme_UploadFiles(inputs: dict()):
                     'j_id673:0:ordem': '2',
                     'j_id673:0:numeroDoc': '',
                     'quantidadeProcessoDocumento': inputs.get("qtdDoc"),
-                    f'j_id673:{inputs.get("qtdDoc")}:tipoDoc': '0',
+                    f'j_id673:{inputs.get("qtdDoc")}:tipoDoc': inputs.get("num_anexo"),
                     f'j_id673:{inputs.get("qtdDoc")}:j_id704': f'j_id673:{inputs.get("qtdDoc")}:j_id704',
                     'ajaxSingle': f'j_id673:{inputs.get("qtdDoc")}:tipoDoc',
                     'AJAX:EVENTS_COUNT': '1'
@@ -67,7 +68,7 @@ def scheme_UploadFiles(inputs: dict()):
                 "payload": {
                     'j_id202': 'Salvar',
                     'j_id673:0:ordem': '2',
-                    'j_id673:0:tipoDoc': '0',
+                    'j_id673:0:tipoDoc': inputs.get("num_anexo"),
                     'j_id673:0:descDoc': inputs.get('filename'),
                     'j_id673:0:numeroDoc': '',
                     'quantidadeProcessoDocumento': inputs.get("qtdDoc"),
@@ -149,7 +150,7 @@ def scheme_UploadFiles(inputs: dict()):
                         'Origin': inputs.get('domain'),
                         'Referer': inputs.get('url_process'),
                         'Host': 'pjeg.tjba.jus.br',
-                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36',
                     },
                     "params": {}
                 },

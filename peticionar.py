@@ -53,9 +53,8 @@ class Pje_pet(BaseRequest, Login, CreateProcess, Upload, Parts, Subject):
     """
     @BaseRequest.screen_decorator("SetParts")
     def set_parts(self):
-        inputs = self.inputs.copy()
-
         for ativo in self.inputs['polo_ativo']:
+            inputs = self.inputs.copy()
             inputs['polo'] = 'PoloAtivo'
             inputs['vicParte'] = 'supResertarVincPartePA'
             for key, value in ativo.items():
@@ -64,6 +63,7 @@ class Pje_pet(BaseRequest, Login, CreateProcess, Upload, Parts, Subject):
             ativo.update(result)
 
         for cpf_passivo in self.inputs['polo_passivo']:
+            inputs = self.inputs.copy()
             inputs['polo'] = 'PoloPassivo'
             inputs['vicParte'] = 'supResetarVincPartePP'
             for key, value in cpf_passivo.items():
@@ -72,17 +72,18 @@ class Pje_pet(BaseRequest, Login, CreateProcess, Upload, Parts, Subject):
             cpf_passivo.update(result)
         return self.switch_to_screen("UploadFiles")
 
-    @BaseRequest.screen_decorator("UploadFiles")
-    def upload_files(self, num_termo, file_options: list):
-        for file in file_options:
-            self.change_screen()
-            mime, mimetype, file_size = get_extension(file['b64Content'])
-            self.find_text(num_termo=num_termo, num_anexo=file['tipo_anexo'])
-            self.prepare_upload()
 
+    @BaseRequest.screen_decorator("UploadFiles")
+    def upload_files(self, file_options: list):
+        self.change_screen()
+        self.prepare_upload()
+
+        for num, file in enumerate(file_options):
+            self.change_screen()
+            # mime, mimetype, file_size = get_extension(file['b64Content'])
             decode_file = base64.b64decode(file['b64Content'])
-            result = self.send_upload(filename=file['filename'],
-                                      file=decode_file, mime=mime, file_size=file_size, mimetype=mimetype)
+            result = self.send_upload(filename=file['filename'], type_file=file['tipo_anexo'],
+                                      file=decode_file, mime='application/pdf', file_size=82318.0, mimetype=".pdf")
 
             file.update(result)
             del file['b64Content']
@@ -90,9 +91,11 @@ class Pje_pet(BaseRequest, Login, CreateProcess, Upload, Parts, Subject):
 
     def start(self, content, file_options):
         self.switch_to_screen("CreateProcess")
-        self.register_process()
-        self.set_subject(content['subjects'])
-        self.set_features()
-        self.set_parts()
-        self.upload_files(num_termo=content['tipo'], file_options=file_options)
-        self.returnMsg(inputs=self.inputs)
+        # self.register_process()
+        self.switch_to_screen("UploadFiles")
+
+        # self.set_subject(content['subjects'])
+        # self.set_features()
+        # self.set_parts()
+        self.upload_files(file_options=file_options)
+        # self.returnMsg(inputs=self.inputs)

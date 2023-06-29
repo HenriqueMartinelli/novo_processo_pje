@@ -1,4 +1,3 @@
-
 class Parts():
 
     """
@@ -7,16 +6,27 @@ class Parts():
     """
 
     def add_part(self, inputs):
-        try:
+        # try:
             self.inputsParts = inputs
             variables = self.get_variables_part(inputs)
             self.inputsParts.update(variables)
+            return self.set_options_type_person(inputs)
+        # except Exception as error:
+        #     raise ValueError(self.return_error(error=error))
+        
+
+    def set_options_type_person(self, inputs):
+        if inputs.get("cpf"):
+            self.switch_to_screen("SetParts")
             self.get_name_part(inputs)
             setAndress = self.change_to_screen_add_andress()
             dict_andress = self.verify_andress(setAndress)
-            return self.add_parts_to_process(content=dict_andress)
-        except Exception as error:
-            raise ValueError(self.return_error(error=error))
+            return self.add_parts_to_process(Address=dict_andress, document="cpf")
+        else:
+            self.switch_to_screen("SetPartsCnpj")
+            self.get_name_part(inputs)
+            return self.add_parts_to_process(Address="", document="cnpj")
+
 
     """
     Adicionando a json de variaveis as variaveis global desse form
@@ -40,13 +50,24 @@ class Parts():
         if not optionsPart.find("div", {"id": "panelPasso1_header"}):
             self.add_option_part(content=optionsPart)
 
-        findCpf = self.find_locator("SetParts", 'requests', index=2, inputs=inputsParts)
-        resultSearch = findCpf.select_one("[id*='divResultadoPesquisaPessoa']").findAll('input')
+        if inputsParts.get("cpf"):
+                response = self.find_locator("SetParts", 'requests', index=2, inputs=inputsParts)
+                return self.find_name_in_response(response, inputsParts, "cpf")
+        
+        self.find_locator('ChangeScreenPerson', 'requests', inputs=self.inputsParts)
+        response = self.find_locator("SetParts", 'requests', index=2, inputs=inputsParts)
+        return self.find_name_in_response(response, inputsParts, "cnpj")
+
+
+
+    def find_name_in_response(self, response, inputsParts, type_person):
+        resultSearch = response.select_one("[id*='divResultadoPesquisaPessoa']").findAll('input')
         for result in resultSearch:
             if result.get('value'):
                 inputsParts['name'] = result['value']
-                return self.set_person()
-        raise RuntimeError({"Error": "Cpf Not found"})
+                print(result['value'])
+                return self.set_person(type_person)
+        raise RuntimeError({"Error": f"{type_person} Not found"})
 
     """
     Irá procurar todas opções de partes e selecionar a partir do texto que foi enviado=tipo_parte
@@ -73,16 +94,17 @@ class Parts():
     Confirmando cpf irá adicionar essa parte as variaveis do formulario
     """
 
-    def set_person(self):
-        setPerson = self.find_locator(
-            "SetParts", 'requests', index=3, inputs=self.inputsParts)
-        self.person = setPerson
-        self.inputsParts['idProfissaoAdv'] = setPerson.select_one(
-            '[for*=profissao]')['for']
-        self.inputsParts['_selection'] = setPerson.select_one(
-            '[id*=_selection]')['id']
+    def set_person(self, type_person):
+        setPerson = self.find_locator("SetParts", 'requests', index=3, inputs=self.inputsParts)
+        if type_person == "cpf":
+            self.inputsParts['idProfissaoAdv'] = setPerson.select_one(
+                '[for*=profissao]')['for']
+            self.inputsParts['_selection'] = setPerson.select_one(
+                '[id*=_selection]')['id']
         self.inputsParts['comboParteSigilosa'] = setPerson.select_one(
             '[for*=comboParteSigilosa]')['for']
+
+        
 
     """
     Irá passar a screen de adicionar endereço e adicionando variaveis usadas nessa screen
@@ -114,10 +136,13 @@ class Parts():
         if is_found.get("check_cep"):
             self.edit_andress()
             return_screen_andress = self.change_to_screen_add_andress()
+            self.find_locator( "SetParts", 'requests', index=9, inputs=self.inputsParts)
             return self.find_andress(content=return_screen_andress, ConfirmedRegister=True)
+
         self.new_andress()
         return_screen_andress = self.change_to_screen_add_andress()
         return self.find_andress(content=return_screen_andress, ConfirmedRegister=True)
+
 
     def find_andress(self, content, ConfirmedRegister=False):
         table_andress = content.select_one(
@@ -183,19 +208,23 @@ class Parts():
     Quando resetado a screen irá tentar achar os nomes da partes e confirmar qual cpf enviado está na pagina.
     """
 
-    def add_parts_to_process(self, content):
-        self.h = self.find_locator( "SetParts", 'requests', index=9, inputs=self.inputsParts)
-        self.findPartie = self.find_locator("SetParts", 'requests', index=10, inputs=self.inputsParts)
-        parts_in_process = self.findPartie.select( f"[id*='gridPartes{self.inputsParts['polo']}List']")
-        for parts in parts_in_process:
-            self.partes_proc = parts_in_process
+    def add_parts_to_process(self, Address, document):
+        self.find_locator( "SetParts", 'requests', index=-2, inputs=self.inputsParts)
+        findPartie = self.find_locator("SetParts", 'requests', index=-1, inputs=self.inputsParts)
+        parts_in_process = findPartie.select( f"[id*='gridPartes{self.inputsParts['polo']}List']")
+        return self.find_part_in_parts(parts=parts_in_process, Address=Address, document=document)
+
+
+    def find_part_in_parts(self, parts, Address, document):
+        for parts in parts:
             part = parts.find("span", {"class": "text-bold"})
             if part:
                 if self.inputsParts['name'] in part.text.strip():
                     return self.appendPart(msg=f"Added part:{part.text}", screen="SetParts", error=False,
-                                           contentAddress=content)
+                                           contentAddress=Address)
         raise RuntimeError(
-            {"Error": f"part not found: {self.inputsParts.get('cpf')}"})
+            {"Error": f"part not found: {document}"})
+
 
     def appendPart(self, msg, error, screen, contentAddress, response=200):
         if not screen:

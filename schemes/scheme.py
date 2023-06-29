@@ -4,7 +4,7 @@ from schemes.SetSubject import scheme_SetSubjects
 from schemes.SetParts import scheme_SetParts
 from schemes.UploadFiles import scheme_UploadFiles
 from schemes.Login import scheme_Login
-from schemes.InitialProtocol import scheme_InitialProtocol
+from schemes.SetPartsCnpj import scheme_SetPartsCnpj
 
 
 class SCHEME:
@@ -26,7 +26,7 @@ class SCHEME:
     def Login(inputs):
         return scheme_Login(inputs=inputs)
     
-    def InitialProtocol(inputs):
-        return scheme_InitialProtocol(inputs=inputs)
+    def SetPartsCnpj(inputs):
+        return scheme_SetPartsCnpj(inputs=inputs)
 
     
