@@ -4,7 +4,7 @@ class Login():
     def antiCaptcha(self):
         solver = hCaptchaProxyless()
         solver.set_verbose(1)
-        solver.set_key("fa901ee28ac52b82d466a87985a19092")
+        solver.set_key("YOUR-TOKEN")
         solver.set_website_url("https://pje.tjba.jus.br/")
         solver.set_website_key('af4fc5a3-1ac5-4e6d-819d-324d412a5e9d')
         result = solver.solve_and_return_solution()
